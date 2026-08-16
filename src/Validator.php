@@ -6,10 +6,16 @@ namespace EduardoKraus\MoodleStringValidate;
 
 use EduardoKraus\MoodleStringValidate\Rule\AccessRule;
 use EduardoKraus\MoodleStringValidate\Rule\CacheRule;
+use EduardoKraus\MoodleStringValidate\Rule\GetStringRule;
+use EduardoKraus\MoodleStringValidate\Rule\JavascriptHtmlRule;
+use EduardoKraus\MoodleStringValidate\Rule\LegacyAjaxRule;
 use EduardoKraus\MoodleStringValidate\Rule\MessageProviderRule;
+use EduardoKraus\MoodleStringValidate\Rule\PrivacyRule;
 use EduardoKraus\MoodleStringValidate\Rule\PluginNameRule;
+use EduardoKraus\MoodleStringValidate\Rule\RepositoryFilesRule;
 use EduardoKraus\MoodleStringValidate\Rule\RuleInterface;
 use EduardoKraus\MoodleStringValidate\Rule\SubpluginRule;
+use EduardoKraus\MoodleStringValidate\Rule\VersionRule;
 use RuntimeException;
 
 final class Validator {
@@ -19,11 +25,17 @@ final class Validator {
     /** @param RuleInterface[]|null $rules */
     public function __construct(?array $rules = null) {
         $this->rules = $rules ?? [
+            new RepositoryFilesRule(),
+            new VersionRule(),
             new PluginNameRule(),
             new SubpluginRule(),
             new AccessRule(),
             new MessageProviderRule(),
             new CacheRule(),
+            new PrivacyRule(),
+            new GetStringRule(),
+            new LegacyAjaxRule(),
+            new JavascriptHtmlRule(),
         ];
     }
 

@@ -1,5 +1,5 @@
 name: Moodle String Validate
-description: Validate required Moodle plugin language strings without installing Moodle.
+description: Validate Moodle plugin structure, subplugins, metadata, language strings, Privacy API references, and selected code-quality checks without installing Moodle.
 author: Eduardo Kraus
 
 inputs:
@@ -19,7 +19,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Validate Moodle language strings
+    - name: Validate Moodle plugin
       shell: bash
       run: |
         args=("${{ inputs.plugin }}" "--lang=${{ inputs.language }}" "--format=github")

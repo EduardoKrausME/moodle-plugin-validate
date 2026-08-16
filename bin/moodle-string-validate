@@ -24,7 +24,7 @@ Examples:
   moodle-string-validate ./plugin --format=github
 
 Exit codes:
-  0  No validation errors
+  0  No validation errors (warnings do not fail the command)
   1  Validation errors found
   2  Invalid arguments or runtime error
 TXT;
@@ -82,6 +82,7 @@ try {
 }
 
 $errorcount = 0;
+$warningcount = 0;
 $okcount = 0;
 
 if ($format === 'text') {
@@ -90,9 +91,25 @@ if ($format === 'text') {
 }
 
 foreach ($checks as $check) {
-    if ($check->ok) {
+    if ($check->isWarning()) {
+        $warningcount++;
+        if ($format === 'github') {
+            echo "WARNING [{$check->rule}] {$check->file}:{$check->line}\n";
+            echo '::warning file=' . githubEscape($check->file) . ',line=' . $check->line . ',title=Moodle validate ' . githubEscape($check->rule) . '::' . githubEscape($check->message) . "\n";
+        } else {
+            echo "WARNING [{$check->rule}] {$check->file}:{$check->line}\n";
+            echo "  {$check->message}\n";
+        }
+        continue;
+    }
+
+    if (!$check->isError()) {
         $okcount++;
-        echo "OK [{$check->rule}] \$string['{$check->key}']\n";
+        if ($check->key !== '') {
+            echo "OK [{$check->rule}] \$string['{$check->key}']\n";
+        } else {
+            echo "OK [{$check->rule}] {$check->message}\n";
+        }
         continue;
     }
 
@@ -100,8 +117,9 @@ foreach ($checks as $check) {
     if ($format === 'github') {
         $message = githubEscape($check->message);
         $file = githubEscape($check->file);
-        echo "ERROR [{$check->rule}] " . ($check->key !== '' ? "\$string['{$check->key}']" : $check->file) . "\n";
-        echo "::error file={$file},line={$check->line},title=Moodle string {$check->rule}::{$message}\n";
+        $target = $check->key !== '' ? "\$string['{$check->key}']" : $check->file;
+        echo "ERROR [{$check->rule}] {$target}\n";
+        echo "::error file={$file},line={$check->line},title=Moodle validate {$check->rule}::{$message}\n";
         continue;
     }
 
@@ -110,7 +128,7 @@ foreach ($checks as $check) {
 }
 
 if ($format === 'text') {
-    echo "\n{$okcount} OK, {$errorcount} error" . ($errorcount === 1 ? '' : 's') . ".\n";
+    echo "\n{$okcount} OK, {$warningcount} warning" . ($warningcount === 1 ? '' : 's') . ", {$errorcount} error" . ($errorcount === 1 ? '' : 's') . ".\n";
 }
 
 exit($errorcount === 0 ? 0 : 1);

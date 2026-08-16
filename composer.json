@@ -1,6 +1,6 @@
 {
   "name": "eduardokraus/moodle-string-validate",
-  "description": "Static validator for required Moodle plugin language strings.",
+  "description": "Static validator for Moodle plugin structure, subplugins, metadata, language strings, Privacy API references, and selected code-quality checks.",
   "type": "library",
   "license": "GPL-3.0-or-later",
   "require": {
