@@ -1,0 +1,17 @@
+{
+  "name": "eduardokraus/moodle-string-validate",
+  "description": "Static validator for required Moodle plugin language strings.",
+  "type": "library",
+  "license": "GPL-3.0-or-later",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "EduardoKraus\\MoodleStringValidate\\": "src/"
+    }
+  },
+  "bin": [
+    "bin/moodle-string-validate"
+  ]
+}

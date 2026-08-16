@@ -1,0 +1,103 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$projectroot = dirname(__DIR__);
+if (is_file($projectroot . '/vendor/autoload.php')) {
+    require $projectroot . '/vendor/autoload.php';
+} else {
+    require $projectroot . '/autoload.php';
+}
+
+use EduardoKraus\MoodleStringValidate\Issue;
+use EduardoKraus\MoodleStringValidate\Validator;
+
+function usage(): void {
+    echo <<<TXT
+Moodle String Validate
+
+Usage:
+  moodle-string-validate [plugin-path] [--lang=en] [--format=text|github] [--allow-empty]
+
+Examples:
+  moodle-string-validate .
+  moodle-string-validate ./plugin --format=github
+
+Exit codes:
+  0  No validation errors
+  1  Validation errors found
+  2  Invalid arguments or runtime error
+TXT;
+}
+
+$path = '.';
+$language = 'en';
+$format = 'text';
+$checkempty = true;
+$pathset = false;
+
+foreach (array_slice($argv, 1) as $argument) {
+    if ($argument === '--help' || $argument === '-h') {
+        usage();
+        exit(0);
+    }
+    if ($argument === '--allow-empty') {
+        $checkempty = false;
+        continue;
+    }
+    if (str_starts_with($argument, '--lang=')) {
+        $language = substr($argument, strlen('--lang='));
+        continue;
+    }
+    if (str_starts_with($argument, '--format=')) {
+        $format = substr($argument, strlen('--format='));
+        continue;
+    }
+    if (str_starts_with($argument, '-')) {
+        fwrite(STDERR, "Unknown option: {$argument}\n");
+        exit(2);
+    }
+    if ($pathset) {
+        fwrite(STDERR, "Only one plugin path may be supplied.\n");
+        exit(2);
+    }
+    $path = $argument;
+    $pathset = true;
+}
+
+if (!in_array($format, ['text', 'github'], true)) {
+    fwrite(STDERR, "Invalid format '{$format}'. Use text or github.\n");
+    exit(2);
+}
+
+try {
+    $issues = (new Validator())->validate($path, $language, $checkempty);
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . PHP_EOL);
+    exit(2);
+}
+
+if ($issues === []) {
+    echo "Moodle language strings: OK\n";
+    exit(0);
+}
+
+if ($format === 'github') {
+    foreach ($issues as $issue) {
+        $message = str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $issue->message);
+        $file = str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $issue->file);
+        echo "::error file={$file},line={$issue->line},title=Moodle string {$issue->rule}::{$message}\n";
+    }
+} else {
+    echo "Moodle String Validate\n";
+    echo str_repeat('=', 22) . "\n\n";
+    foreach ($issues as $issue) {
+        echo "ERROR [{$issue->rule}] {$issue->file}:{$issue->line}\n";
+        echo "  {$issue->message}\n\n";
+    }
+    $count = count($issues);
+    echo $count . ' error' . ($count === 1 ? '' : 's') . " found.\n";
+}
+
+exit(1);

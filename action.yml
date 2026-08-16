@@ -1,0 +1,33 @@
+name: Moodle String Validate
+description: Validate required Moodle plugin language strings without installing Moodle.
+author: Eduardo Kraus
+
+inputs:
+  plugin:
+    description: Path to the Moodle plugin root.
+    required: false
+    default: .
+  language:
+    description: Base language to validate.
+    required: false
+    default: en
+  allow-empty:
+    description: Allow required language strings to have an empty value.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Validate Moodle language strings
+      shell: bash
+      run: |
+        args=("${{ inputs.plugin }}" "--lang=${{ inputs.language }}" "--format=github")
+        if [ "${{ inputs.allow-empty }}" = "true" ]; then
+          args+=("--allow-empty")
+        fi
+        php "${{ github.action_path }}/bin/moodle-string-validate" "${args[@]}"
+
+branding:
+  icon: check-circle
+  color: blue
