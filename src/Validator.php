@@ -47,15 +47,22 @@ final class Validator {
         }
 
         $component = (new ComponentResolver())->resolve($realroot);
-        $languagefile = $realroot . '/lang/' . $language . '/' . $component . '.php';
+
+        // Activity modules use the plugin name without the "mod_" prefix as the
+        // language file name. The Frankenstyle component itself remains mod_xxx.
+        $languagecomponent = str_starts_with($component, 'mod_')
+            ? substr($component, 4)
+            : $component;
+
+        $languagefile = $realroot . '/lang/' . $language . '/' . $languagecomponent . '.php';
         if (!is_file($languagefile)) {
             return [new Check(
                 false,
                 'languagefile',
-                'lang/' . $language . '/' . $component . '.php',
+                'lang/' . $language . '/' . $languagecomponent . '.php',
                 1,
                 '',
-                "Missing base language file lang/{$language}/{$component}.php.",
+                "Missing base language file lang/{$language}/{$languagecomponent}.php.",
             )];
         }
 
