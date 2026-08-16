@@ -16,14 +16,12 @@ final class PluginNameRule implements RuleInterface {
             ? $context->pluginroot . '/version.php'
             : $context->catalog->file();
 
-        $issue = $context->issueForRequiredString(
+        return [$context->checkRequiredString(
             $this->name(),
             'pluginname',
             $source,
             1,
             'every Moodle plugin must define its display name in the base language file.',
-        );
-
-        return $issue === null ? [] : [$issue];
+        )];
     }
 }

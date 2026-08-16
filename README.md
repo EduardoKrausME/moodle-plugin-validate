@@ -14,7 +14,7 @@ The first version validates the base language file, `lang/en/<component>.php`, a
 | `db/messages.php` | `messageprovider:<provider>` |
 | `db/caches.php` | `cachedef_<definition>` |
 
-Missing strings fail validation. Required strings with an empty value also fail by default.
+Missing strings fail validation. Required strings with an empty value also fail by default. Every successful check is also printed as `OK`, so the CI log shows both what passed and what failed.
 
 The PHP metadata files are inspected statically with `token_get_all()`. They are not included or executed, so constants such as `CAP_ALLOW`, `CONTEXT_COURSE`, `RISK_CONFIG`, and `cache_store::MODE_APPLICATION` do not require a Moodle installation.
 
@@ -52,7 +52,7 @@ While developing, another repository can use `@main`. After the first stable rel
     plugin: ./plugin
 ```
 
-The action reports errors on the file and line that introduced the requirement whenever possible.
+The action prints every successful validation as `OK` and reports errors on the file and line that introduced the requirement whenever possible.
 
 ## Using it in moodle-plugin-ci
 
@@ -76,3 +76,20 @@ php tests/run.php
 ```
 
 Composer is optional. The package provides PSR-4 metadata and a Composer `bin` entry for projects that prefer installing the validator as a development dependency.
+
+
+## Output example
+
+```text
+Moodle String Validate
+======================
+
+OK [pluginname] $string['pluginname']
+OK [subplugin] $string['subplugintype_recerttask']
+ERROR [subplugin] lang/en/local_kopere_recert.php:142
+  Language string $string['subplugintype_recerttask_plural'] is empty; required by subplugin type 'recerttask' in db/subplugins.json.
+OK [access] $string['kopere_recert:manage']
+OK [messageprovider] $string['messageprovider:kopere_recert_available']
+
+4 OK, 1 error.
+```

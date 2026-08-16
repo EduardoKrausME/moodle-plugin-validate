@@ -53,6 +53,19 @@ function assertKeys(array $issues, array $expected): void {
     }
 }
 
+function assertCheckStatuses(array $checks, array $expected): void {
+    $actual = [];
+    foreach ($checks as $check) {
+        $actual[$check->key] = $check->ok ? 'OK' : 'ERROR';
+    }
+    ksort($actual);
+    ksort($expected);
+    if ($actual !== $expected) {
+        fwrite(STDERR, "Expected statuses:\n" . print_r($expected, true) . "Actual statuses:\n" . print_r($actual, true));
+        exit(1);
+    }
+}
+
 $validator = new Validator();
 
 $root = createPlugin([
@@ -91,6 +104,14 @@ assertKeys($validator->validate($root), [
     'subplugintype_exampletype',
     'subplugintype_exampletype_plural',
 ]);
+assertCheckStatuses($validator->validateDetailed($root), [
+    'pluginname' => 'OK',
+    'example:manage' => 'ERROR',
+    'messageprovider:notice' => 'ERROR',
+    'cachedef_result' => 'ERROR',
+    'subplugintype_exampletype' => 'ERROR',
+    'subplugintype_exampletype_plural' => 'ERROR',
+]);
 removeTree($root);
 
 $root = createPlugin([
@@ -109,6 +130,14 @@ $string['subplugintype_exampletype_plural'] = 'Example types';
 PHPFILE,
 ]);
 assertKeys($validator->validate($root), []);
+assertCheckStatuses($validator->validateDetailed($root), [
+    'pluginname' => 'OK',
+    'example:manage' => 'OK',
+    'messageprovider:notice' => 'OK',
+    'cachedef_result' => 'OK',
+    'subplugintype_exampletype' => 'OK',
+    'subplugintype_exampletype_plural' => 'OK',
+]);
 removeTree($root);
 
 $root = createPlugin([
@@ -119,6 +148,8 @@ PHPFILE,
 ]);
 assertKeys($validator->validate($root), ['pluginname']);
 assertKeys($validator->validate($root, 'en', false), []);
+assertCheckStatuses($validator->validateDetailed($root), ['pluginname' => 'ERROR']);
+assertCheckStatuses($validator->validateDetailed($root, 'en', false), ['pluginname' => 'OK']);
 removeTree($root);
 
 echo "All tests passed.\n";

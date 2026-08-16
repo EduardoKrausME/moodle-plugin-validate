@@ -17,21 +17,18 @@ final class CacheRule implements RuleInterface {
             return [];
         }
 
-        $issues = [];
+        $checks = [];
         foreach ($context->extractor->extract($file, 'definitions') as $definition) {
             $key = 'cachedef_' . $definition['key'];
-            $issue = $context->issueForRequiredString(
+            $checks[] = $context->checkRequiredString(
                 $this->name(),
                 $key,
                 $file,
                 $definition['line'],
                 "required by cache definition '{$definition['key']}' in db/caches.php.",
             );
-            if ($issue !== null) {
-                $issues[] = $issue;
-            }
         }
 
-        return $issues;
+        return $checks;
     }
 }

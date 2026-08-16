@@ -27,8 +27,8 @@ final class Validator {
         ];
     }
 
-    /** @return Issue[] */
-    public function validate(string $pluginroot, string $language = 'en', bool $checkempty = true): array {
+    /** @return Check[] */
+    public function validateDetailed(string $pluginroot, string $language = 'en', bool $checkempty = true): array {
         $realroot = realpath($pluginroot);
         if ($realroot === false || !is_dir($realroot)) {
             throw new RuntimeException("Plugin path does not exist: {$pluginroot}");
@@ -37,7 +37,8 @@ final class Validator {
         $component = (new ComponentResolver())->resolve($realroot);
         $languagefile = $realroot . '/lang/' . $language . '/' . $component . '.php';
         if (!is_file($languagefile)) {
-            return [new Issue(
+            return [new Check(
+                false,
                 'languagefile',
                 'lang/' . $language . '/' . $component . '.php',
                 1,
@@ -55,9 +56,22 @@ final class Validator {
             $checkempty,
         );
 
-        $issues = [];
+        $checks = [];
         foreach ($this->rules as $rule) {
-            array_push($issues, ...$rule->validate($context));
+            array_push($checks, ...$rule->validate($context));
+        }
+
+        return $checks;
+    }
+
+    /** @return Issue[] */
+    public function validate(string $pluginroot, string $language = 'en', bool $checkempty = true): array {
+        $issues = [];
+        foreach ($this->validateDetailed($pluginroot, $language, $checkempty) as $check) {
+            $issue = $check->toIssue();
+            if ($issue !== null) {
+                $issues[] = $issue;
+            }
         }
 
         return $issues;

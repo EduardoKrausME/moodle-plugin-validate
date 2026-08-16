@@ -17,7 +17,7 @@ final class AccessRule implements RuleInterface {
             return [];
         }
 
-        $issues = [];
+        $checks = [];
         foreach ($context->extractor->extract($file, 'capabilities') as $capability) {
             $parts = preg_split('~[/:]~', $capability['key'], 3);
             if ($parts === false || count($parts) !== 3) {
@@ -26,18 +26,15 @@ final class AccessRule implements RuleInterface {
 
             [, $pluginname, $capabilityname] = $parts;
             $key = $pluginname . ':' . $capabilityname;
-            $issue = $context->issueForRequiredString(
+            $checks[] = $context->checkRequiredString(
                 $this->name(),
                 $key,
                 $file,
                 $capability['line'],
                 "required by capability '{$capability['key']}' in db/access.php.",
             );
-            if ($issue !== null) {
-                $issues[] = $issue;
-            }
         }
 
-        return $issues;
+        return $checks;
     }
 }

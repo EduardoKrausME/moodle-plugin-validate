@@ -17,21 +17,18 @@ final class MessageProviderRule implements RuleInterface {
             return [];
         }
 
-        $issues = [];
+        $checks = [];
         foreach ($context->extractor->extract($file, 'messageproviders') as $provider) {
             $key = 'messageprovider:' . $provider['key'];
-            $issue = $context->issueForRequiredString(
+            $checks[] = $context->checkRequiredString(
                 $this->name(),
                 $key,
                 $file,
                 $provider['line'],
                 "required by message provider '{$provider['key']}' in db/messages.php.",
             );
-            if ($issue !== null) {
-                $issues[] = $issue;
-            }
         }
 
-        return $issues;
+        return $checks;
     }
 }

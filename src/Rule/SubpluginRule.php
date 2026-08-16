@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EduardoKraus\MoodleStringValidate\Rule;
 
-use EduardoKraus\MoodleStringValidate\Issue;
+use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
 final class SubpluginRule implements RuleInterface {
@@ -20,13 +20,14 @@ final class SubpluginRule implements RuleInterface {
 
         $contents = file_get_contents($file);
         if ($contents === false) {
-            return [new Issue($this->name(), 'db/subplugins.json', 1, '', 'Unable to read db/subplugins.json.')];
+            return [new Check(false, $this->name(), 'db/subplugins.json', 1, '', 'Unable to read db/subplugins.json.')];
         }
 
         try {
             $data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
-            return [new Issue(
+            return [new Check(
+                false,
                 $this->name(),
                 'db/subplugins.json',
                 1,
@@ -47,23 +48,20 @@ final class SubpluginRule implements RuleInterface {
             }
         }
 
-        $issues = [];
+        $checks = [];
         foreach ($types as $type => $line) {
             foreach (['subplugintype_' . $type, 'subplugintype_' . $type . '_plural'] as $key) {
-                $issue = $context->issueForRequiredString(
+                $checks[] = $context->checkRequiredString(
                     $this->name(),
                     $key,
                     $file,
                     $line,
                     "required by subplugin type '{$type}' in db/subplugins.json.",
                 );
-                if ($issue !== null) {
-                    $issues[] = $issue;
-                }
             }
         }
 
-        return $issues;
+        return $checks;
     }
 
     private function findJsonKeyLine(string $contents, string $key): int {

@@ -24,15 +24,16 @@ final class ValidationContext {
         return $path;
     }
 
-    public function issueForRequiredString(
+    public function checkRequiredString(
         string $rule,
         string $key,
         string $sourcefile,
         int $sourceline,
         string $reason,
-    ): ?Issue {
+    ): Check {
         if (!$this->catalog->has($key)) {
-            return new Issue(
+            return new Check(
+                false,
                 $rule,
                 $this->relative($sourcefile),
                 $sourceline,
@@ -42,7 +43,8 @@ final class ValidationContext {
         }
 
         if ($this->checkempty && $this->catalog->isEmpty($key)) {
-            return new Issue(
+            return new Check(
+                false,
                 $rule,
                 $this->relative($this->catalog->file()),
                 $this->catalog->line($key),
@@ -51,6 +53,23 @@ final class ValidationContext {
             );
         }
 
-        return null;
+        return new Check(
+            true,
+            $rule,
+            $this->relative($sourcefile),
+            $sourceline,
+            $key,
+            "Language string \$string['{$key}'] exists.",
+        );
+    }
+
+    public function issueForRequiredString(
+        string $rule,
+        string $key,
+        string $sourcefile,
+        int $sourceline,
+        string $reason,
+    ): ?Issue {
+        return $this->checkRequiredString($rule, $key, $sourcefile, $sourceline, $reason)->toIssue();
     }
 }

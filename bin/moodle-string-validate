@@ -10,7 +10,6 @@ if (is_file($projectroot . '/vendor/autoload.php')) {
     require $projectroot . '/autoload.php';
 }
 
-use EduardoKraus\MoodleStringValidate\Issue;
 use EduardoKraus\MoodleStringValidate\Validator;
 
 function usage(): void {
@@ -29,6 +28,10 @@ Exit codes:
   1  Validation errors found
   2  Invalid arguments or runtime error
 TXT;
+}
+
+function githubEscape(string $value): string {
+    return str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $value);
 }
 
 $path = '.';
@@ -72,32 +75,42 @@ if (!in_array($format, ['text', 'github'], true)) {
 }
 
 try {
-    $issues = (new Validator())->validate($path, $language, $checkempty);
+    $checks = (new Validator())->validateDetailed($path, $language, $checkempty);
 } catch (Throwable $exception) {
     fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . PHP_EOL);
     exit(2);
 }
 
-if ($issues === []) {
-    echo "Moodle language strings: OK\n";
-    exit(0);
-}
+$errorcount = 0;
+$okcount = 0;
 
-if ($format === 'github') {
-    foreach ($issues as $issue) {
-        $message = str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $issue->message);
-        $file = str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $issue->file);
-        echo "::error file={$file},line={$issue->line},title=Moodle string {$issue->rule}::{$message}\n";
-    }
-} else {
+if ($format === 'text') {
     echo "Moodle String Validate\n";
     echo str_repeat('=', 22) . "\n\n";
-    foreach ($issues as $issue) {
-        echo "ERROR [{$issue->rule}] {$issue->file}:{$issue->line}\n";
-        echo "  {$issue->message}\n\n";
-    }
-    $count = count($issues);
-    echo $count . ' error' . ($count === 1 ? '' : 's') . " found.\n";
 }
 
-exit(1);
+foreach ($checks as $check) {
+    if ($check->ok) {
+        $okcount++;
+        echo "OK [{$check->rule}] \$string['{$check->key}']\n";
+        continue;
+    }
+
+    $errorcount++;
+    if ($format === 'github') {
+        $message = githubEscape($check->message);
+        $file = githubEscape($check->file);
+        echo "ERROR [{$check->rule}] " . ($check->key !== '' ? "\$string['{$check->key}']" : $check->file) . "\n";
+        echo "::error file={$file},line={$check->line},title=Moodle string {$check->rule}::{$message}\n";
+        continue;
+    }
+
+    echo "ERROR [{$check->rule}] {$check->file}:{$check->line}\n";
+    echo "  {$check->message}\n";
+}
+
+if ($format === 'text') {
+    echo "\n{$okcount} OK, {$errorcount} error" . ($errorcount === 1 ? '' : 's') . ".\n";
+}
+
+exit($errorcount === 0 ? 0 : 1);
