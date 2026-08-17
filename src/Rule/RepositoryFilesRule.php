@@ -22,7 +22,7 @@ final class RepositoryFilesRule implements RuleInterface {
             ),
             $this->checkOneOf(
                 $context,
-                ['README.md', 'README', 'README.txt', 'README.rst'],
+                ['README.md'],
                 'README',
                 'Missing README file in the project root. Expected README.md, README, README.txt, or README.rst.'
             ),
