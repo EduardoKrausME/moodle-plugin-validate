@@ -10,6 +10,7 @@ use EduardoKraus\MoodleStringValidate\Rule\GetStringRule;
 use EduardoKraus\MoodleStringValidate\Rule\JavascriptHtmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\LegacyAjaxRule;
 use EduardoKraus\MoodleStringValidate\Rule\MessageProviderRule;
+use EduardoKraus\MoodleStringValidate\Rule\ModCourseContentsRule;
 use EduardoKraus\MoodleStringValidate\Rule\PrivacyRule;
 use EduardoKraus\MoodleStringValidate\Rule\PluginNameRule;
 use EduardoKraus\MoodleStringValidate\Rule\RepositoryFilesRule;
@@ -28,6 +29,7 @@ final class Validator {
             new RepositoryFilesRule(),
             new VersionRule(),
             new PluginNameRule(),
+            new ModCourseContentsRule(),
             new SubpluginRule(),
             new AccessRule(),
             new MessageProviderRule(),
