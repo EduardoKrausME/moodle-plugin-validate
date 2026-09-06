@@ -11,6 +11,7 @@ use EduardoKraus\MoodleStringValidate\Rule\JavascriptHtmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\LegacyAjaxRule;
 use EduardoKraus\MoodleStringValidate\Rule\MessageProviderRule;
 use EduardoKraus\MoodleStringValidate\Rule\ModCourseContentsRule;
+use EduardoKraus\MoodleStringValidate\Rule\MoodleExceptionRule;
 use EduardoKraus\MoodleStringValidate\Rule\PrivacyRule;
 use EduardoKraus\MoodleStringValidate\Rule\PluginNameRule;
 use EduardoKraus\MoodleStringValidate\Rule\RepositoryFilesRule;
@@ -36,6 +37,7 @@ final class Validator {
             new CacheRule(),
             new PrivacyRule(),
             new GetStringRule(),
+            new MoodleExceptionRule(),
             new LegacyAjaxRule(),
             new JavascriptHtmlRule(),
         ];
