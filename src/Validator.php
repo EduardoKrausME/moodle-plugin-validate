@@ -7,6 +7,7 @@ namespace EduardoKraus\MoodleStringValidate;
 use EduardoKraus\MoodleStringValidate\Rule\AccessRule;
 use EduardoKraus\MoodleStringValidate\Rule\CacheRule;
 use EduardoKraus\MoodleStringValidate\Rule\GetStringRule;
+use EduardoKraus\MoodleStringValidate\Rule\InstallXmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\JavascriptHtmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\LegacyAjaxRule;
 use EduardoKraus\MoodleStringValidate\Rule\MessageProviderRule;
@@ -30,6 +31,7 @@ final class Validator {
             new RepositoryFilesRule(),
             new VersionRule(),
             new PluginNameRule(),
+            new InstallXmlRule(),
             new ModCourseContentsRule(),
             new SubpluginRule(),
             new AccessRule(),
@@ -51,13 +53,7 @@ final class Validator {
         }
 
         $component = (new ComponentResolver())->resolve($realroot);
-
-        // Activity modules use the plugin name without the "mod_" prefix as the
-        // language file name. The Frankenstyle component itself remains mod_xxx.
-        $languagecomponent = str_starts_with($component, 'mod_')
-            ? substr($component, 4)
-            : $component;
-
+        $languagecomponent = str_starts_with($component, 'mod_') ? substr($component, 4) : $component;
         $languagefile = $realroot . '/lang/' . $language . '/' . $languagecomponent . '.php';
         if (!is_file($languagefile)) {
             return [new Check(
@@ -83,7 +79,6 @@ final class Validator {
         foreach ($this->rules as $rule) {
             array_push($checks, ...$rule->validate($context));
         }
-
         return $checks;
     }
 
@@ -96,7 +91,6 @@ final class Validator {
                 $issues[] = $issue;
             }
         }
-
         return $issues;
     }
 }
