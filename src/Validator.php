@@ -11,6 +11,7 @@ use EduardoKraus\MoodleStringValidate\Rule\InstallXmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\JavascriptHtmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\LegacyAjaxRule;
 use EduardoKraus\MoodleStringValidate\Rule\MessageProviderRule;
+use EduardoKraus\MoodleStringValidate\Rule\ModBackupRestoreRule;
 use EduardoKraus\MoodleStringValidate\Rule\ModCourseContentsRule;
 use EduardoKraus\MoodleStringValidate\Rule\MoodleExceptionRule;
 use EduardoKraus\MoodleStringValidate\Rule\PrivacyRule;
@@ -33,6 +34,7 @@ final class Validator {
             new PluginNameRule(),
             new InstallXmlRule(),
             new ModCourseContentsRule(),
+            new ModBackupRestoreRule(),
             new SubpluginRule(),
             new AccessRule(),
             new MessageProviderRule(),
