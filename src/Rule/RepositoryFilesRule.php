@@ -13,7 +13,7 @@ final class RepositoryFilesRule implements RuleInterface {
     }
 
     public function validate(ValidationContext $context): array {
-        return [
+        $checks = [
             $this->checkOneOf(
                 $context,
                 ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'COPYING', 'COPYING.txt'],
@@ -27,6 +27,17 @@ final class RepositoryFilesRule implements RuleInterface {
                 'Missing README file in the project root. Expected README.md, README, README.txt, or README.rst.'
             ),
         ];
+
+        if (str_starts_with($context->component, 'mod_')) {
+            $checks[] = $this->checkRequiredFile(
+                $context,
+                'db/upgrade.php',
+                "File {$context->component}/db/upgrade.php exists in archive.",
+                "File {$context->component}/db/upgrade.php must exist in archive and is not found.",
+            );
+        }
+
+        return $checks;
     }
 
     private function checkOneOf(
@@ -50,5 +61,23 @@ final class RepositoryFilesRule implements RuleInterface {
         }
 
         return new Check(false, $this->name(), $filenames[0], 1, '', $missingmessage);
+    }
+
+    private function checkRequiredFile(
+        ValidationContext $context,
+        string $filename,
+        string $successmessage,
+        string $missingmessage,
+    ): Check {
+        $exists = is_file($context->pluginroot . '/' . $filename);
+
+        return new Check(
+            $exists,
+            $this->name(),
+            $filename,
+            1,
+            '',
+            $exists ? $successmessage : $missingmessage,
+        );
     }
 }
