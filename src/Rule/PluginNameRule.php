@@ -16,12 +16,24 @@ final class PluginNameRule implements RuleInterface {
             ? $context->pluginroot . '/version.php'
             : $context->catalog->file();
 
-        return [$context->checkRequiredString(
+        $checks = [$context->checkRequiredString(
             $this->name(),
             'pluginname',
             $source,
             1,
             'every Moodle plugin must define its display name in the base language file.',
         )];
+
+        if (str_starts_with($context->component, 'mod_')) {
+            $checks[] = $context->checkRequiredString(
+                $this->name(),
+                'pluginadministration',
+                $source,
+                1,
+                'activity modules must define pluginadministration in the English language file.',
+            );
+        }
+
+        return $checks;
     }
 }
