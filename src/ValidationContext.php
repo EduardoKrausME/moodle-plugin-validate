@@ -39,6 +39,8 @@ final class ValidationContext {
                 $sourceline,
                 $key,
                 "Missing language string \$string['{$key}']; {$reason}",
+                null,
+                true,
             );
         }
 
@@ -50,6 +52,8 @@ final class ValidationContext {
                 $this->catalog->line($key),
                 $key,
                 "Language string \$string['{$key}'] is empty; {$reason}",
+                null,
+                true,
             );
         }
 
@@ -60,6 +64,8 @@ final class ValidationContext {
             $sourceline,
             $key,
             "Language string \$string['{$key}'] exists.",
+            null,
+            true,
         );
     }
 

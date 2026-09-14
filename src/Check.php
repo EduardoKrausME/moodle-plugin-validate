@@ -15,6 +15,7 @@ final class Check {
         public readonly string $key,
         public readonly string $message,
         ?string $severity = null,
+        public readonly bool $languageString = false,
     ) {
         $this->severity = $severity ?? ($ok ? 'ok' : 'error');
     }
@@ -35,6 +36,18 @@ final class Check {
 
     public function isWarning(): bool {
         return $this->severity === 'warning';
+    }
+
+    public function target(): string {
+        if ($this->key === '') {
+            return $this->file;
+        }
+
+        if ($this->languageString) {
+            return "\$string['{$this->key}']";
+        }
+
+        return $this->key;
     }
 
     public function toIssue(): ?Issue {

@@ -106,7 +106,7 @@ foreach ($checks as $check) {
     if (!$check->isError()) {
         $okcount++;
         if ($check->key !== '') {
-            echo "OK [{$check->rule}] \$string['{$check->key}']\n";
+            echo "OK [{$check->rule}] {$check->target()}\n";
         } else {
             echo "OK [{$check->rule}] {$check->message}\n";
         }
@@ -117,7 +117,7 @@ foreach ($checks as $check) {
     if ($format === 'github') {
         $message = githubEscape($check->message);
         $file = githubEscape($check->file);
-        $target = $check->key !== '' ? "\$string['{$check->key}']" : $check->file;
+        $target = $check->target();
         echo "ERROR [{$check->rule}] {$target}\n";
         echo "::error file={$file},line={$check->line},title=Moodle validate {$check->rule}::{$message}\n";
         continue;
