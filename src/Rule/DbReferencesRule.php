@@ -138,14 +138,16 @@ final class DbReferencesRule implements RuleInterface {
         ?string $classpath = null,
         ?string $displaykey = null,
     ): ?array {
-        $classfile = $this->inspector->resolveClassFile($context, $classname, $classpath);
+        $metadataabsolute = $context->pluginroot . '/' . ltrim($metadatafile, '/');
+        $resolvedclassname = $this->inspector->resolveImportedClass($metadataabsolute, $classname);
+        $classfile = $this->inspector->resolveClassFile($context, $resolvedclassname, $classpath);
         $key = $displaykey ?? $classname;
         if ($classfile === null || !is_file($classfile)) {
             $checks[] = $this->error($metadatafile, $line, $key, "Referenced class {$classname} cannot be resolved to an existing plugin PHP file.");
             return null;
         }
 
-        $classinfo = $this->inspector->classInfo($classfile, $classname);
+        $classinfo = $this->inspector->classInfo($classfile, $resolvedclassname);
         if ($classinfo === null) {
             $checks[] = $this->error($metadatafile, $line, $key, "Referenced class {$classname} was not found in " . $context->relative($classfile) . '.');
             return null;

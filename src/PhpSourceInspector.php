@@ -27,6 +27,47 @@ final class PhpSourceInspector {
         return $context->pluginroot . '/classes/' . str_replace('\\', '/', $relative) . '.php';
     }
 
+    public function resolveImportedClass(string $file, string $classname): string {
+        $classname = ltrim($classname, '\\');
+        if ($classname === '' || !is_file($file)) {
+            return $classname;
+        }
+
+        $source = file_get_contents($file);
+        if ($source === false) {
+            return $classname;
+        }
+
+        [$alias, $suffix] = array_pad(explode('\\', $classname, 2), 2, null);
+        if ($alias === '') {
+            return $classname;
+        }
+
+        if (preg_match_all(
+            '/^\s*use\s+(?!function\b|const\b)([\\\\A-Za-z_][\\\\A-Za-z0-9_]*)(?:\s+as\s+([A-Za-z_][A-Za-z0-9_]*))?\s*;/mi',
+            $source,
+            $matches,
+            PREG_SET_ORDER,
+        ) !== false) {
+            foreach ($matches as $match) {
+                $import = ltrim($match[1], '\\');
+                $importalias = $match[2] ?? '';
+                if ($importalias === '') {
+                    $separator = strrpos($import, '\\');
+                    $importalias = $separator === false ? $import : substr($import, $separator + 1);
+                }
+
+                if (strcasecmp($alias, $importalias) !== 0) {
+                    continue;
+                }
+
+                return $suffix === null || $suffix === '' ? $import : $import . '\\' . $suffix;
+            }
+        }
+
+        return $classname;
+    }
+
     public function resolveFileReference(ValidationContext $context, string $reference): ?string {
         $reference = trim(str_replace('\\', '/', $reference));
         if ($reference === '' || str_contains($reference, '..')) {
@@ -192,7 +233,7 @@ final class PhpSourceInspector {
     public function literalValue(string $code, string $key): ?string {
         $key = preg_quote($key, '/');
         if (preg_match('/[\'\"]' . $key . '[\'\"]\s*=>\s*([\'\"])((?:\\\\.|(?!\1).)*)\1/sU', $code, $match) === 1) {
-            return stripcslashes($match[2]);
+            return $this->decodePhpStringLiteral($match[2], $match[1]);
         }
         if (preg_match('/[\'\"]' . $key . '[\'\"]\s*=>\s*([\\\\A-Za-z_][\\\\A-Za-z0-9_]*)::class/', $code, $match) === 1) {
             return ltrim($match[1], '\\');
@@ -220,10 +261,19 @@ final class PhpSourceInspector {
         $map = [];
         if (preg_match_all('/([\'\"])((?:\\\\.|(?!\1).)*)\1\s*=>\s*([\'\"])((?:\\\\.|(?!\3).)*)\3/sU', $code, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                $map[stripcslashes($match[2])] = stripcslashes($match[4]);
+                $key = $this->decodePhpStringLiteral($match[2], $match[1]);
+                $value = $this->decodePhpStringLiteral($match[4], $match[3]);
+                $map[$key] = $value;
             }
         }
         return $map;
+    }
+
+    private function decodePhpStringLiteral(string $value, string $quote): string {
+        if ($quote === "'") {
+            return str_replace(["\\\\", "\\'"], ["\\", "'"], $value);
+        }
+        return stripcslashes($value);
     }
 
     private function readNamespace(array $tokens, int $start): string {
