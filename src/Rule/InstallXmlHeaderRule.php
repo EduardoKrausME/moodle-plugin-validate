@@ -233,19 +233,20 @@ final class InstallXmlHeaderRule implements RuleInterface {
     private function parseAttributes(string $source): array {
         $attributes = [];
         if (preg_match_all(
-            '/([A-Za-z_][A-Za-z0-9_.:-]*)\s*=\s*("([^"]*)"|\'([^\']*)\')/s',
+            '/(?<name>[A-Za-z_][A-Za-z0-9_.:-]*)\s*=\s*(?<quote>["\'])(?<value>.*?)\k<quote>/s',
             $source,
             $matches,
             PREG_SET_ORDER,
         )) {
             foreach ($matches as $match) {
-                $attributes[$match[1]] = html_entity_decode(
-                    $match[3] !== "" ? $match[3] : $match[4],
+                $attributes[$match["name"]] = html_entity_decode(
+                    $match["value"],
                     ENT_QUOTES | ENT_XML1,
                     "UTF-8",
                 );
             }
         }
+
         return $attributes;
     }
 
