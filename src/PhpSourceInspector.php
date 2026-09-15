@@ -1,0 +1,439 @@
+<?php
+
+declare(strict_types=1);
+
+namespace EduardoKraus\MoodleStringValidate;
+
+final class PhpSourceInspector {
+    public function resolveClassFile(ValidationContext $context, string $classname, ?string $classpath = null): ?string {
+        if ($classpath !== null && $classpath !== '') {
+            $path = $this->resolveFileReference($context, $classpath);
+            if ($path !== null) {
+                return $path;
+            }
+        }
+
+        $classname = ltrim($classname, "\\");
+        $prefix = $context->component . "\\";
+        if (!str_starts_with($classname, $prefix)) {
+            return null;
+        }
+
+        $relative = substr($classname, strlen($prefix));
+        if ($relative === '' || str_contains($relative, '..')) {
+            return null;
+        }
+
+        return $context->pluginroot . '/classes/' . str_replace('\\', '/', $relative) . '.php';
+    }
+
+    public function resolveFileReference(ValidationContext $context, string $reference): ?string {
+        $reference = trim(str_replace('\\', '/', $reference));
+        if ($reference === '' || str_contains($reference, '..')) {
+            return null;
+        }
+
+        $reference = preg_replace('/^\$CFG->dirroot\s*\.\s*/', '', $reference) ?? $reference;
+        $reference = trim($reference, " \t\n\r\0\x0B'\"");
+        $reference = ltrim($reference, '/');
+
+        foreach ([
+            $context->pluginroot . '/' . $reference,
+            $context->pluginroot . '/' . basename($reference),
+        ] as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array{name:string,extends:string,line:int,methods:array<string,array{line:int,code:string}>}|null */
+    public function classInfo(string $file, string $classname): ?array {
+        $source = file_get_contents($file);
+        if ($source === false) {
+            return null;
+        }
+
+        $tokens = token_get_all($source);
+        $namespace = '';
+        $count = count($tokens);
+
+        for ($i = 0; $i < $count; $i++) {
+            $token = $tokens[$i];
+            if (is_array($token) && $token[0] === T_NAMESPACE) {
+                $namespace = $this->readNamespace($tokens, $i + 1);
+                continue;
+            }
+            if (!is_array($token) || $token[0] !== T_CLASS || $this->isAnonymousClass($tokens, $i)) {
+                continue;
+            }
+
+            $nameindex = $this->nextTokenOfType($tokens, $i + 1, T_STRING);
+            if ($nameindex === null) {
+                continue;
+            }
+
+            $shortname = $tokens[$nameindex][1];
+            $fqcn = $namespace === '' ? $shortname : $namespace . '\\' . $shortname;
+            $target = ltrim($classname, '\\');
+            if (strcasecmp($target, $fqcn) !== 0 && !(strpos($target, '\\') === false && strcasecmp($target, $shortname) === 0)) {
+                continue;
+            }
+
+            $open = $this->findOpeningBrace($tokens, $nameindex + 1);
+            if ($open === null) {
+                return null;
+            }
+            $close = $this->matchingToken($tokens, $open, '{', '}');
+            if ($close === null) {
+                return null;
+            }
+
+            $extends = $this->readExtends($tokens, $nameindex + 1, $open);
+            $classcode = $this->tokensToString(array_slice($tokens, $i, $close - $i + 1));
+
+            return [
+                'name' => $fqcn,
+                'extends' => $extends,
+                'line' => $token[2],
+                'methods' => $this->methodsFromClassCode($classcode, $token[2]),
+            ];
+        }
+
+        return null;
+    }
+
+    /** @return array{line:int,code:string}|null */
+    public function functionInfo(string $file, string $functionname): ?array {
+        $source = file_get_contents($file);
+        if ($source === false) {
+            return null;
+        }
+        $tokens = token_get_all($source);
+        $count = count($tokens);
+        for ($i = 0; $i < $count; $i++) {
+            if (!is_array($tokens[$i]) || $tokens[$i][0] !== T_FUNCTION) {
+                continue;
+            }
+            $nameindex = $this->nextTokenOfType($tokens, $i + 1, T_STRING);
+            if ($nameindex === null || $tokens[$nameindex][1] !== $functionname) {
+                continue;
+            }
+            return $this->captureFunction($tokens, $i, 0);
+        }
+        return null;
+    }
+
+    public function functionExists(string $file, string $functionname): bool {
+        return $this->functionInfo($file, $functionname) !== null;
+    }
+
+    /** @return array<int,array{line:int,code:string}> */
+    public function arrayEntries(string $file, string $variablename): array {
+        $source = file_get_contents($file);
+        if ($source === false) {
+            return [];
+        }
+
+        $tokens = token_get_all($source);
+        $target = '$' . ltrim($variablename, '$');
+        $count = count($tokens);
+
+        for ($i = 0; $i < $count; $i++) {
+            if (!$this->isToken($tokens[$i], T_VARIABLE, $target)) {
+                continue;
+            }
+            $equals = $this->nextSignificant($tokens, $i + 1);
+            $start = $equals === null ? null : $this->nextSignificant($tokens, $equals + 1);
+            if ($equals === null || $tokens[$equals] !== '=' || $start === null) {
+                continue;
+            }
+            $open = $this->arrayOpeningIndex($tokens, $start);
+            if ($open !== null) {
+                return $this->childArrayEntries($tokens, $open);
+            }
+        }
+
+        return [];
+    }
+
+    public function arraySource(string $file, string $variablename): ?string {
+        $source = file_get_contents($file);
+        if ($source === false) {
+            return null;
+        }
+
+        $tokens = token_get_all($source);
+        $target = '$' . ltrim($variablename, '$');
+        $count = count($tokens);
+        for ($i = 0; $i < $count; $i++) {
+            if (!$this->isToken($tokens[$i], T_VARIABLE, $target)) {
+                continue;
+            }
+            $equals = $this->nextSignificant($tokens, $i + 1);
+            $start = $equals === null ? null : $this->nextSignificant($tokens, $equals + 1);
+            if ($equals === null || $tokens[$equals] !== '=' || $start === null) {
+                continue;
+            }
+            $open = $this->arrayOpeningIndex($tokens, $start);
+            if ($open === null) {
+                continue;
+            }
+            $close = $this->matchingToken($tokens, $open, (string)$tokens[$open], $tokens[$open] === '[' ? ']' : ')');
+            if ($close !== null) {
+                return $this->tokensToString(array_slice($tokens, $open, $close - $open + 1));
+            }
+        }
+        return null;
+    }
+
+    public function literalValue(string $code, string $key): ?string {
+        $key = preg_quote($key, '/');
+        if (preg_match('/[\'\"]' . $key . '[\'\"]\s*=>\s*([\'\"])((?:\\\\.|(?!\1).)*)\1/sU', $code, $match) === 1) {
+            return stripcslashes($match[2]);
+        }
+        if (preg_match('/[\'\"]' . $key . '[\'\"]\s*=>\s*([\\\\A-Za-z_][\\\\A-Za-z0-9_]*)::class/', $code, $match) === 1) {
+            return ltrim($match[1], '\\');
+        }
+        return null;
+    }
+
+    /** @return array{class:string,method:string}|null */
+    public function callbackValue(string $code, string $key = 'callback'): ?array {
+        $literal = $this->literalValue($code, $key);
+        if ($literal !== null && str_contains($literal, '::')) {
+            [$class, $method] = explode('::', $literal, 2);
+            return ['class' => ltrim($class, '\\'), 'method' => $method];
+        }
+
+        $key = preg_quote($key, '/');
+        if (preg_match('/[\'\"]' . $key . '[\'\"]\s*=>\s*\[\s*([\\\\A-Za-z_][\\\\A-Za-z0-9_]*)::class\s*,\s*[\'\"]([^\'\"]+)[\'\"]\s*\]/s', $code, $match) === 1) {
+            return ['class' => ltrim($match[1], '\\'), 'method' => $match[2]];
+        }
+        return null;
+    }
+
+    /** @return array<string,string> */
+    public function literalStringMap(string $code): array {
+        $map = [];
+        if (preg_match_all('/([\'\"])((?:\\\\.|(?!\1).)*)\1\s*=>\s*([\'\"])((?:\\\\.|(?!\3).)*)\3/sU', $code, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $map[stripcslashes($match[2])] = stripcslashes($match[4]);
+            }
+        }
+        return $map;
+    }
+
+    private function readNamespace(array $tokens, int $start): string {
+        $name = '';
+        for ($i = $start, $count = count($tokens); $i < $count; $i++) {
+            $token = $tokens[$i];
+            if ($token === ';' || $token === '{') {
+                break;
+            }
+            if (is_array($token) && in_array($token[0], [T_STRING, T_NS_SEPARATOR, T_NAME_QUALIFIED], true)) {
+                $name .= $token[1];
+            }
+        }
+        return trim($name, '\\');
+    }
+
+    private function readExtends(array $tokens, int $start, int $end): string {
+        for ($i = $start; $i < $end; $i++) {
+            if (!is_array($tokens[$i]) || $tokens[$i][0] !== T_EXTENDS) {
+                continue;
+            }
+            $name = '';
+            for ($j = $i + 1; $j < $end; $j++) {
+                $token = $tokens[$j];
+                if (is_array($token) && in_array($token[0], [T_STRING, T_NS_SEPARATOR, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                    $name .= $token[1];
+                    continue;
+                }
+                if (is_array($token) && $token[0] === T_WHITESPACE) {
+                    if ($name !== '') {
+                        break;
+                    }
+                    continue;
+                }
+                if ($name !== '') {
+                    break;
+                }
+            }
+            return ltrim($name, '\\');
+        }
+        return '';
+    }
+
+    /** @return array<string,array{line:int,code:string}> */
+    private function methodsFromClassCode(string $source, int $classline): array {
+        $tokens = token_get_all("<?php\n" . $source);
+        $methods = [];
+        $depth = 0;
+        for ($i = 0, $count = count($tokens); $i < $count; $i++) {
+            $token = $tokens[$i];
+            if ($token === '{') {
+                $depth++;
+                continue;
+            }
+            if ($token === '}') {
+                $depth--;
+                continue;
+            }
+            if ($depth !== 1 || !is_array($token) || $token[0] !== T_FUNCTION) {
+                continue;
+            }
+            $nameindex = $this->nextTokenOfType($tokens, $i + 1, T_STRING);
+            if ($nameindex !== null) {
+                $info = $this->captureFunction($tokens, $i, $classline - 1);
+                if ($info !== null) {
+                    $methods[$tokens[$nameindex][1]] = $info;
+                }
+            }
+        }
+        return $methods;
+    }
+
+    /** @return array{line:int,code:string}|null */
+    private function captureFunction(array $tokens, int $start, int $lineoffset): ?array {
+        $open = $this->findOpeningBrace($tokens, $start + 1);
+        if ($open === null) {
+            return null;
+        }
+        $close = $this->matchingToken($tokens, $open, '{', '}');
+        if ($close === null) {
+            return null;
+        }
+        return [
+            'line' => max(1, $tokens[$start][2] + $lineoffset),
+            'code' => $this->tokensToString(array_slice($tokens, $start, $close - $start + 1)),
+        ];
+    }
+
+    /** @return array<int,array{line:int,code:string}> */
+    private function childArrayEntries(array $tokens, int $outeropen): array {
+        $outerclose = $this->matchingToken($tokens, $outeropen, (string)$tokens[$outeropen], $tokens[$outeropen] === '[' ? ']' : ')');
+        if ($outerclose === null) {
+            return [];
+        }
+
+        $entries = [];
+        $depth = 1;
+        for ($i = $outeropen + 1; $i < $outerclose; $i++) {
+            $token = $tokens[$i];
+            $childopen = null;
+            if ($depth === 1 && $token === '[') {
+                $childopen = $i;
+            } elseif ($depth === 1 && is_array($token) && $token[0] === T_ARRAY) {
+                $next = $this->nextSignificant($tokens, $i + 1);
+                if ($next !== null && $tokens[$next] === '(') {
+                    $childopen = $next;
+                }
+            }
+
+            if ($childopen !== null) {
+                $childclose = $this->matchingToken($tokens, $childopen, (string)$tokens[$childopen], $tokens[$childopen] === '[' ? ']' : ')');
+                if ($childclose === null) {
+                    break;
+                }
+                $line = 1;
+                for ($j = $childopen; $j >= 0; $j--) {
+                    if (is_array($tokens[$j])) {
+                        $line = $tokens[$j][2];
+                        break;
+                    }
+                }
+                $entries[] = ['line' => $line, 'code' => $this->tokensToString(array_slice($tokens, $childopen, $childclose - $childopen + 1))];
+                $i = $childclose;
+                continue;
+            }
+
+            if (in_array($token, ['[', '(', '{'], true)) {
+                $depth++;
+            } elseif (in_array($token, [']', ')', '}'], true)) {
+                $depth--;
+            }
+        }
+        return $entries;
+    }
+
+    private function arrayOpeningIndex(array $tokens, int $start): ?int {
+        if ($tokens[$start] === '[') {
+            return $start;
+        }
+        if (is_array($tokens[$start]) && $tokens[$start][0] === T_ARRAY) {
+            $open = $this->nextSignificant($tokens, $start + 1);
+            return $open !== null && $tokens[$open] === '(' ? $open : null;
+        }
+        return null;
+    }
+
+    private function isAnonymousClass(array $tokens, int $index): bool {
+        for ($i = $index - 1; $i >= 0; $i--) {
+            if (is_array($tokens[$i]) && in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                continue;
+            }
+            return is_array($tokens[$i]) && $tokens[$i][0] === T_NEW;
+        }
+        return false;
+    }
+
+    private function findOpeningBrace(array $tokens, int $start): ?int {
+        for ($i = $start, $count = count($tokens); $i < $count; $i++) {
+            if ($tokens[$i] === '{') {
+                return $i;
+            }
+            if ($tokens[$i] === ';') {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private function matchingToken(array $tokens, int $start, string $open, string $close): ?int {
+        $depth = 0;
+        for ($i = $start, $count = count($tokens); $i < $count; $i++) {
+            if ($tokens[$i] === $open) {
+                $depth++;
+            } elseif ($tokens[$i] === $close && --$depth === 0) {
+                return $i;
+            }
+        }
+        return null;
+    }
+
+    private function nextSignificant(array $tokens, int $start): ?int {
+        for ($i = $start, $count = count($tokens); $i < $count; $i++) {
+            if (!is_array($tokens[$i]) || !in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                return $i;
+            }
+        }
+        return null;
+    }
+
+    private function nextTokenOfType(array $tokens, int $start, int $type): ?int {
+        for ($i = $start, $count = count($tokens); $i < $count; $i++) {
+            if (is_array($tokens[$i]) && $tokens[$i][0] === $type) {
+                return $i;
+            }
+            if ($tokens[$i] === '{' || $tokens[$i] === ';') {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private function tokensToString(array $tokens): string {
+        $code = '';
+        foreach ($tokens as $token) {
+            $code .= is_array($token) ? $token[1] : $token;
+        }
+        return $code;
+    }
+
+    private function isToken(array|string $token, int $type, string $value): bool {
+        return is_array($token) && $token[0] === $type && $token[1] === $value;
+    }
+}
