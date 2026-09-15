@@ -239,11 +239,13 @@ final class InstallXmlHeaderRule implements RuleInterface {
             PREG_SET_ORDER,
         )) {
             foreach ($matches as $match) {
-                $attributes[$match["name"]] = html_entity_decode(
-                    $match["value"],
-                    ENT_QUOTES | ENT_XML1,
-                    "UTF-8",
-                );
+                if(isset($match["value"])) {
+                    $attributes[$match["name"]] = html_entity_decode(
+                        $match["value"],
+                        ENT_QUOTES | ENT_XML1,
+                        "UTF-8",
+                    );
+                }
             }
         }
 
