@@ -18,6 +18,7 @@ use EduardoKraus\MoodleStringValidate\Rule\ModBackupRestoreRule;
 use EduardoKraus\MoodleStringValidate\Rule\ModCourseContentsRule;
 use EduardoKraus\MoodleStringValidate\Rule\ModSupportsRule;
 use EduardoKraus\MoodleStringValidate\Rule\MoodleExceptionRule;
+use EduardoKraus\MoodleStringValidate\Rule\MustacheUrlRule;
 use EduardoKraus\MoodleStringValidate\Rule\PrivacyRule;
 use EduardoKraus\MoodleStringValidate\Rule\PluginNameRule;
 use EduardoKraus\MoodleStringValidate\Rule\RepositoryFilesRule;
@@ -54,6 +55,7 @@ final class Validator {
             new MoodleExceptionRule(),
             new LegacyAjaxRule(),
             new JavascriptHtmlRule(),
+            new MustacheUrlRule(),
         ];
     }
 
