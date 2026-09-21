@@ -142,6 +142,7 @@ final class SubpluginRule implements RuleInterface {
                     "required by subplugin type '{$type}' in db/subplugins.json.",
                 );
             }
+            $checks[] = $this->validatePlugininfoClass($context, $type);
         }
 
         $localpaths = $this->resolveLocalPaths($context, $sections);
@@ -325,6 +326,99 @@ final class SubpluginRule implements RuleInterface {
         }
 
         return $checks;
+    }
+
+    private function validatePlugininfoClass(ValidationContext $context, string $type): Check {
+        $relativefile = 'classes/plugininfo/' . $type . '.php';
+        $file = $context->pluginroot . '/' . $relativefile;
+        $expectednamespace = $context->component . '\\plugininfo';
+        $expectedclass = '\\' . $expectednamespace . '\\' . $type;
+
+        if (!is_file($file)) {
+            return new Check(
+                false,
+                $this->name(),
+                $relativefile,
+                1,
+                '',
+                'Subplugin type "' . $type . '" should define class "' . $expectedclass . '"',
+            );
+        }
+
+        $source = file_get_contents($file);
+        if ($source === false || !$this->declaresClass($source, $expectednamespace, $type)) {
+            return new Check(
+                false,
+                $this->name(),
+                $relativefile,
+                1,
+                '',
+                'Subplugin type "' . $type . '" should define class "' . $expectedclass . '"',
+            );
+        }
+
+        return new Check(
+            true,
+            $this->name(),
+            $relativefile,
+            1,
+            '',
+            'Subplugin type "' . $type . '" defines class "' . $expectedclass . '".',
+        );
+    }
+
+    private function declaresClass(string $source, string $expectednamespace, string $expectedclass): bool {
+        $tokens = token_get_all($source);
+        $namespace = '';
+        $count = count($tokens);
+
+        for ($index = 0; $index < $count; $index++) {
+            $token = $tokens[$index];
+            if (!is_array($token)) {
+                continue;
+            }
+
+            if ($token[0] === T_NAMESPACE) {
+                $namespace = '';
+                for ($index++; $index < $count; $index++) {
+                    $part = $tokens[$index];
+                    if (is_string($part) && ($part === ';' || $part === '{')) {
+                        break;
+                    }
+                    if (is_array($part) && in_array($part[0], [T_STRING, T_NAME_QUALIFIED, T_NS_SEPARATOR], true)) {
+                        $namespace .= $part[1];
+                    }
+                }
+                continue;
+            }
+
+            if ($token[0] !== T_CLASS) {
+                continue;
+            }
+
+            $previous = $index - 1;
+            while ($previous >= 0 && is_array($tokens[$previous]) && $tokens[$previous][0] === T_WHITESPACE) {
+                $previous--;
+            }
+            if ($previous >= 0 && is_array($tokens[$previous]) && $tokens[$previous][0] === T_NEW) {
+                continue;
+            }
+
+            for ($classindex = $index + 1; $classindex < $count; $classindex++) {
+                $classtoken = $tokens[$classindex];
+                if (is_array($classtoken) && $classtoken[0] === T_WHITESPACE) {
+                    continue;
+                }
+                if (is_array($classtoken) && $classtoken[0] === T_STRING) {
+                    if ($namespace === $expectednamespace && $classtoken[1] === $expectedclass) {
+                        return true;
+                    }
+                }
+                break;
+            }
+        }
+
+        return false;
     }
 
     /** @return array<string, int> */

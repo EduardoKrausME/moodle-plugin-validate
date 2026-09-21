@@ -63,6 +63,24 @@ function createSubplugin(
 PHPFILE);
 }
 
+function createPlugininfoClass(
+    string $root,
+    string $type,
+    string $parent = 'local_example',
+): void {
+    $directory = $root . '/classes/plugininfo';
+    if (!is_dir($directory)) {
+        mkdir($directory, 0777, true);
+    }
+    file_put_contents($directory . '/' . $type . '.php', <<<PHPFILE
+<?php
+namespace {$parent}\\plugininfo;
+
+class {$type} extends \\core\\plugininfo\\base {
+}
+PHPFILE);
+}
+
 function removeTree(string $directory): void {
     if (!is_dir($directory)) {
         return;
@@ -186,6 +204,7 @@ PHPFILE,
         'subplugintypes' => ['exampletype' => 'exampletype'],
     ], JSON_PRETTY_PRINT),
 ]);
+createPlugininfoClass($root, 'exampletype');
 createSubplugin($root, 'exampletype', 'alpha');
 $checks = $validator->validateDetailed($root);
 assertCheck($checks, 'subplugin', true, null, 'valid JSON');
@@ -195,11 +214,28 @@ assertCheck($checks, 'subplugin', true, null, 'same type keys');
 assertCheck($checks, 'subplugin', true, null, 'matching legacy and modern paths');
 assertCheck($checks, 'subplugin', true, 'subplugintype_exampletype');
 assertCheck($checks, 'subplugin', true, 'subplugintype_exampletype_plural');
+assertCheck($checks, 'subplugin', true, null, 'defines class "\\local_example\\plugininfo\\exampletype"');
 assertCheck($checks, 'subplugin', true, null, "correctly identifies itself as 'exampletype_alpha'");
 assertCheck($checks, 'subplugin', true, null, "declares dependency on parent 'local_example'");
 assertCheck($checks, 'subplugin', true, null, 'parent dependency version');
 assertNoErrors($checks);
 assertIssueKeys($validator->validate($root), []);
+removeTree($root);
+
+// Missing plugininfo class for a declared subplugin type is detected.
+$root = createPlugin([
+    'lang' => "<?php\n\$string['pluginname']='Example';\n\$string['subplugintype_geniaicontroller']='Controller';\n\$string['subplugintype_geniaicontroller_plural']='Controllers';\n",
+    'subplugins' => '{"subplugintypes":{"geniaicontroller":"controller"}}',
+]);
+mkdir($root . '/controller', 0777, true);
+$checks = $validator->validateDetailed($root);
+assertCheck(
+    $checks,
+    'subplugin',
+    false,
+    null,
+    'Subplugin type "geniaicontroller" should define class "\\local_example\\plugininfo\\geniaicontroller"',
+);
 removeTree($root);
 
 // Wrong canonical filename is detected.
