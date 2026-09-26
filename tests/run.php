@@ -5,6 +5,7 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/autoload.php';
 
 use EduardoKraus\MoodleStringValidate\Check;
+use EduardoKraus\MoodleStringValidate\PhpSourceInspector;
 use EduardoKraus\MoodleStringValidate\Validator;
 
 function createPlugin(array $options = []): string {
@@ -402,6 +403,49 @@ file_put_contents($root . '/amd/src/ui.js', "define([], function() {\n    elemen
 $checks = $validator->validateDetailed($root);
 assertWarning($checks, 'javascript', 'Large inline HTML fragment');
 assertIssueKeys($validator->validate($root), []);
+removeTree($root);
+
+// Curly interpolation inside strings must not truncate class or method parsing.
+$root = createPlugin();
+mkdir($root . '/classes', 0777, true);
+$classfile = $root . '/classes/service.php';
+file_put_contents($classfile, <<<'PHPFILE'
+<?php
+
+namespace local_example;
+
+class service {
+    public static function first() {
+        global $CFG, $USER;
+
+        require_once("{$CFG->libdir}/authlib.php");
+        header("Location: {$USER->redirect}");
+        self::validate_context(\context_system::instance());
+    }
+
+    public static function first_returns() {
+        return true;
+    }
+
+    public static function second() {
+        return true;
+    }
+}
+PHPFILE);
+
+$inspector = new PhpSourceInspector();
+$classinfo = $inspector->classInfo($classfile, 'local_example\\service');
+if ($classinfo === null) {
+    fail('PhpSourceInspector must parse classes containing curly string interpolation.');
+}
+foreach (['first', 'first_returns', 'second'] as $methodname) {
+    if (!isset($classinfo['methods'][$methodname])) {
+        fail("PhpSourceInspector did not find method {$methodname} after curly string interpolation.");
+    }
+}
+if (!str_contains($classinfo['methods']['first']['code'], 'validate_context')) {
+    fail('PhpSourceInspector truncated a method at a curly string interpolation boundary.');
+}
 removeTree($root);
 
 echo "All tests passed.\n";

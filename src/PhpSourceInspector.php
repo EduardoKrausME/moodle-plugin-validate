@@ -324,7 +324,7 @@ final class PhpSourceInspector {
         $depth = 0;
         for ($i = 0, $count = count($tokens); $i < $count; $i++) {
             $token = $tokens[$i];
-            if ($token === '{') {
+            if ($token === '{' || $this->isCurlyInterpolationOpen($token)) {
                 $depth++;
                 continue;
             }
@@ -400,7 +400,7 @@ final class PhpSourceInspector {
                 continue;
             }
 
-            if (in_array($token, ['[', '(', '{'], true)) {
+            if (in_array($token, ['[', '(', '{'], true) || $this->isCurlyInterpolationOpen($token)) {
                 $depth++;
             } elseif (in_array($token, [']', ')', '}'], true)) {
                 $depth--;
@@ -445,13 +445,20 @@ final class PhpSourceInspector {
     private function matchingToken(array $tokens, int $start, string $open, string $close): ?int {
         $depth = 0;
         for ($i = $start, $count = count($tokens); $i < $count; $i++) {
-            if ($tokens[$i] === $open) {
+            $token = $tokens[$i];
+
+            if ($token === $open || ($open === '{' && $this->isCurlyInterpolationOpen($token))) {
                 $depth++;
-            } elseif ($tokens[$i] === $close && --$depth === 0) {
+            } elseif ($token === $close && --$depth === 0) {
                 return $i;
             }
         }
         return null;
+    }
+
+    private function isCurlyInterpolationOpen(array|string $token): bool {
+        return is_array($token)
+            && in_array($token[0], [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true);
     }
 
     private function nextSignificant(array $tokens, int $start): ?int {
