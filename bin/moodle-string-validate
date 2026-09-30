@@ -91,6 +91,8 @@ if ($format === 'text') {
 }
 
 foreach ($checks as $check) {
+    echo PHP_EOL . "▶ ";
+
     if ($check->isWarning()) {
         $warningcount++;
         if ($format === 'github') {
