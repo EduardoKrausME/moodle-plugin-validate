@@ -1,4 +1,4 @@
-# Moodle String Validate
+# Moodle Plugin Validate
 
 Static PHP validator for Moodle plugin structure, metadata, subplugins, and language strings. It does not bootstrap or install Moodle, so it can run before the heavier `moodle-plugin-ci` installation step.
 
@@ -195,7 +195,7 @@ For a workflow using `moodle-plugin-ci`, place this validation after PHP setup a
 ## Output example
 
 ```text
-Moodle String Validate
+Moodle Plugin Validate
 ======================
 
 OK [repository] license file exists in project root: LICENSE.

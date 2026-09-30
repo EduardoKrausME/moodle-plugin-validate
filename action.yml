@@ -1,4 +1,4 @@
-name: Moodle String Validate
+name: Moodle Plugin Validate
 description: Validate Moodle plugin structure, subplugins, metadata, language strings, Privacy API references, and selected code-quality checks without installing Moodle.
 author: Eduardo Kraus
 

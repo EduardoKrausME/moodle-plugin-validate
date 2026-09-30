@@ -14,7 +14,7 @@ use EduardoKraus\MoodleStringValidate\Validator;
 
 function usage(): void {
     echo <<<TXT
-Moodle String Validate
+Moodle Plugin Validate
 
 Usage:
   moodle-string-validate [plugin-path] [--lang=en] [--format=text|github] [--allow-empty]
@@ -87,7 +87,7 @@ $okcount = 0;
 $currentrule = null;
 
 if ($format === 'text') {
-    echo "Moodle String Validate\n";
+    echo "Moodle Plugin Validate\n";
     echo str_repeat('=', 22) . "\n\n";
 }
 
