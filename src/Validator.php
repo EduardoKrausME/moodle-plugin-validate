@@ -96,6 +96,27 @@ final class Validator {
         return $checks;
     }
 
+    /**
+     * Runs all checks and returns the structured result used by library and JSON consumers.
+     */
+    public function validateResult(
+        string $pluginroot,
+        string $language = 'en',
+        bool $checkempty = true,
+    ): ValidationResult {
+        $realroot = realpath($pluginroot);
+        if ($realroot === false || !is_dir($realroot)) {
+            throw new RuntimeException("Plugin path does not exist: {$pluginroot}");
+        }
+
+        $component = (new ComponentResolver())->resolve($realroot);
+
+        return new ValidationResult(
+            $component,
+            $this->validateDetailed($realroot, $language, $checkempty),
+        );
+    }
+
     /** @return Issue[] */
     public function validate(string $pluginroot, string $language = 'en', bool $checkempty = true): array {
         $issues = [];
