@@ -227,6 +227,8 @@ The returned structure follows this contract:
           "key": "",
           "target": "version.php",
           "message": "version.php exists in project root.",
+          "explanation": "",
+          "howToFix": "",
           "languageString": false
         }
       ]
@@ -234,6 +236,8 @@ The returned structure follows this contract:
   ]
 }
 ```
+
+For errors and warnings, structured checks also contain `explanation` and `howToFix`. The first explains why the finding matters in Moodle; the second gives an actionable correction. Successful checks leave both fields empty.
 
 The CLI format is now only a presentation layer over this result: GitHub Actions uses `--format=github`, terminal use can keep `--format=text`, and integrations can use `--format=json` or consume `ValidationResult` directly.
 
