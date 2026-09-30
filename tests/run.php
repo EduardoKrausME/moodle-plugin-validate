@@ -405,6 +405,48 @@ assertWarning($checks, 'javascript', 'Large inline HTML fragment');
 assertIssueKeys($validator->validate($root), []);
 removeTree($root);
 
+// Moodle-root classpaths must resolve the deepest plugin-relative file before basename fallbacks.
+$root = createPlugin(['component' => 'mod_example']);
+mkdir($root . '/classes/service', 0777, true);
+file_put_contents($root . '/view.php', "<?php\n// Activity entry point, not the external service class.\n");
+file_put_contents($root . '/classes/service/view.php', <<<'PHPFILE'
+<?php
+
+namespace mod_example\service;
+
+class view extends \external_api {
+    public static function execute_parameters() {
+        return new \external_function_parameters([]);
+    }
+
+    public static function execute() {
+        self::validate_parameters(self::execute_parameters(), []);
+        self::validate_context(\context_system::instance());
+        return true;
+    }
+
+    public static function execute_returns() {
+        return new \external_value(PARAM_BOOL);
+    }
+}
+PHPFILE);
+file_put_contents($root . '/db/services.php', <<<'PHPFILE'
+<?php
+$functions = [
+    'mod_example_view' => [
+        'classpath' => 'mod/example/classes/service/view.php',
+        'classname' => 'mod_example\\service\\view',
+        'methodname' => 'execute',
+        'type' => 'read',
+    ],
+];
+PHPFILE);
+$checks = $validator->validateDetailed($root);
+assertCheck($checks, 'db_references', true, 'mod_example\\service\\view');
+assertCheck($checks, 'db_references', true, 'mod_example\\service\\view::execute');
+assertNoErrors($checks);
+removeTree($root);
+
 // Curly interpolation inside strings must not truncate class or method parsing.
 $root = createPlugin();
 mkdir($root . '/classes', 0777, true);
