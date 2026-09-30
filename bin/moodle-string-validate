@@ -17,11 +17,12 @@ function usage(): void {
 Moodle Plugin Validate
 
 Usage:
-  moodle-string-validate [plugin-path] [--lang=en] [--format=text|github] [--allow-empty]
+  moodle-string-validate [plugin-path] [--lang=en] [--format=text|github|json] [--allow-empty]
 
 Examples:
   moodle-string-validate .
   moodle-string-validate ./plugin --format=github
+  moodle-string-validate ./plugin --format=json
 
 Exit codes:
   0  No validation errors (warnings do not fail the command)
@@ -32,6 +33,16 @@ TXT;
 
 function githubEscape(string $value): string {
     return str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $value);
+}
+
+/**
+ * @param array<string, mixed> $payload
+ */
+function outputJson(array $payload): void {
+    echo json_encode(
+        $payload,
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+    ) . PHP_EOL;
 }
 
 $path = '.';
@@ -69,88 +80,102 @@ foreach (array_slice($argv, 1) as $argument) {
     $pathset = true;
 }
 
-if (!in_array($format, ['text', 'github'], true)) {
-    fwrite(STDERR, "Invalid format '{$format}'. Use text or github.\n");
+if (!in_array($format, ['text', 'github', 'json'], true)) {
+    fwrite(STDERR, "Invalid format '{$format}'. Use text, github or json.\n");
     exit(2);
 }
 
 try {
-    $checks = (new Validator())->validateDetailed($path, $language, $checkempty);
+    $result = (new Validator())->validateResult($path, $language, $checkempty);
+    $data = $result->toArray();
 } catch (Throwable $exception) {
-    fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . PHP_EOL);
+    if ($format === 'json') {
+        outputJson([
+            'schema' => 1,
+            'success' => false,
+            'status' => 'error',
+            'summary' => [
+                'total' => 0,
+                'ok' => 0,
+                'warnings' => 0,
+                'errors' => 1,
+            ],
+            'groups' => [],
+            'runtimeError' => [
+                'message' => $exception->getMessage(),
+            ],
+        ]);
+    } else {
+        fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . PHP_EOL);
+    }
     exit(2);
 }
 
-$errorcount = 0;
-$warningcount = 0;
-$okcount = 0;
-$currentrule = null;
+if ($format === 'json') {
+    outputJson($data);
+    exit($data['success'] ? 0 : 1);
+}
+
+$errorcount = $data['summary']['errors'];
+$warningcount = $data['summary']['warnings'];
+$okcount = $data['summary']['ok'];
 
 if ($format === 'text') {
     echo "Moodle Plugin Validate\n";
     echo str_repeat('=', 22) . "\n\n";
 }
 
-foreach ($checks as $check) {
-    $rule = $check->rule;
-    if ($rule === '' && str_starts_with($check->key, 'xmldb:')) {
-        $rule = 'installxml';
-    } elseif ($rule === '') {
-        $rule = 'general';
-    }
+foreach ($data['groups'] as $group) {
+    echo "## {$group['rule']}\n";
 
-    if ($rule !== $currentrule) {
-        if ($currentrule !== null) {
-            echo PHP_EOL;
-        }
-        echo "## {$rule}\n";
-        $currentrule = $rule;
-    }
-
-    if ($check->isWarning()) {
-        $warningcount++;
-        if ($format === 'github') {
-            echo "  ▶ WARNING {$check->file}:{$check->line}\n";
-            echo '::warning file=' . githubEscape($check->file) . ',line=' . $check->line . ',title=Moodle validate ' . githubEscape($rule) . '::' . githubEscape($check->message) . "\n";
-        } else {
-            echo "  ▶ WARNING {$check->file}:{$check->line}\n";
-            echo "    {$check->message}\n";
-        }
-        continue;
-    }
-
-    if (!$check->isError()) {
-        $okcount++;
-
-        // The successful pluginname check is represented by the rule heading itself.
-        if ($rule === 'pluginname' && $check->languageString && $check->key === 'pluginname') {
+    foreach ($group['checks'] as $check) {
+        if ($check['status'] === 'warning') {
+            if ($format === 'github') {
+                echo "  ▶ WARNING {$check['file']}:{$check['line']}\n";
+                echo '::warning file=' . githubEscape($check['file'])
+                    . ',line=' . $check['line']
+                    . ',title=Moodle validate ' . githubEscape($group['rule'])
+                    . '::' . githubEscape($check['message']) . "\n";
+            } else {
+                echo "  ▶ WARNING {$check['file']}:{$check['line']}\n";
+                echo "    {$check['message']}\n";
+            }
             continue;
         }
 
-        if ($check->key !== '') {
-            echo "  ▶ OK {$check->target()}\n";
-        } else {
-            echo "  ▶ OK {$check->message}\n";
+        if ($check['status'] === 'ok') {
+            // The successful pluginname check is represented by the rule heading itself.
+            if ($group['rule'] === 'pluginname' && $check['languageString'] && $check['key'] === 'pluginname') {
+                continue;
+            }
+
+            if ($check['key'] !== '') {
+                echo "  ▶ OK {$check['target']}\n";
+            } else {
+                echo "  ▶ OK {$check['message']}\n";
+            }
+            continue;
         }
-        continue;
+
+        if ($format === 'github') {
+            echo "  ▶ ERROR {$check['target']}\n";
+            echo '::error file=' . githubEscape($check['file'])
+                . ',line=' . $check['line']
+                . ',title=Moodle validate ' . githubEscape($group['rule'])
+                . '::' . githubEscape($check['message']) . "\n";
+            continue;
+        }
+
+        echo "  ▶ ERROR {$check['file']}:{$check['line']}\n";
+        echo "    {$check['message']}\n";
     }
 
-    $errorcount++;
-    if ($format === 'github') {
-        $message = githubEscape($check->message);
-        $file = githubEscape($check->file);
-        $target = $check->target();
-        echo "  ▶ ERROR {$target}\n";
-        echo "::error file={$file},line={$check->line},title=Moodle validate {$rule}::{$message}\n";
-        continue;
-    }
-
-    echo "  ▶ ERROR {$check->file}:{$check->line}\n";
-    echo "    {$check->message}\n";
+    echo PHP_EOL;
 }
 
 if ($format === 'text') {
-    echo "\n{$okcount} OK, {$warningcount} warning" . ($warningcount === 1 ? '' : 's') . ", {$errorcount} error" . ($errorcount === 1 ? '' : 's') . ".\n";
+    echo "{$okcount} OK, {$warningcount} warning" . ($warningcount === 1 ? '' : 's')
+        . ", {$errorcount} error" . ($errorcount === 1 ? '' : 's') . ".\n";
 }
 
-exit($errorcount === 0 ? 0 : 1);
+exit($data['success'] ? 0 : 1);
