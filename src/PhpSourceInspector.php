@@ -78,10 +78,9 @@ final class PhpSourceInspector {
         $reference = trim($reference, " \t\n\r\0\x0B'\"");
         $reference = ltrim($reference, '/');
 
-        foreach ([
-            $context->pluginroot . '/' . $reference,
-            $context->pluginroot . '/' . basename($reference),
-        ] as $candidate) {
+        $segments = explode('/', $reference);
+        for ($offset = 0, $count = count($segments); $offset < $count; $offset++) {
+            $candidate = $context->pluginroot . '/' . implode('/', array_slice($segments, $offset));
             if (is_file($candidate)) {
                 return $candidate;
             }
