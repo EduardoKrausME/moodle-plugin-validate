@@ -84,6 +84,7 @@ try {
 $errorcount = 0;
 $warningcount = 0;
 $okcount = 0;
+$currentrule = null;
 
 if ($format === 'text') {
     echo "Moodle String Validate\n";
@@ -91,26 +92,45 @@ if ($format === 'text') {
 }
 
 foreach ($checks as $check) {
-    echo PHP_EOL . "▶ ";
+    $rule = $check->rule;
+    if ($rule === '' && str_starts_with($check->key, 'xmldb:')) {
+        $rule = 'installxml';
+    } elseif ($rule === '') {
+        $rule = 'general';
+    }
+
+    if ($rule !== $currentrule) {
+        if ($currentrule !== null) {
+            echo PHP_EOL;
+        }
+        echo "## {$rule}\n";
+        $currentrule = $rule;
+    }
 
     if ($check->isWarning()) {
         $warningcount++;
         if ($format === 'github') {
-            echo "WARNING [{$check->rule}] {$check->file}:{$check->line}\n";
-            echo '::warning file=' . githubEscape($check->file) . ',line=' . $check->line . ',title=Moodle validate ' . githubEscape($check->rule) . '::' . githubEscape($check->message) . "\n";
+            echo "  ▶ WARNING {$check->file}:{$check->line}\n";
+            echo '::warning file=' . githubEscape($check->file) . ',line=' . $check->line . ',title=Moodle validate ' . githubEscape($rule) . '::' . githubEscape($check->message) . "\n";
         } else {
-            echo "WARNING [{$check->rule}] {$check->file}:{$check->line}\n";
-            echo "  {$check->message}\n";
+            echo "  ▶ WARNING {$check->file}:{$check->line}\n";
+            echo "    {$check->message}\n";
         }
         continue;
     }
 
     if (!$check->isError()) {
         $okcount++;
+
+        // The successful pluginname check is represented by the rule heading itself.
+        if ($rule === 'pluginname' && $check->languageString && $check->key === 'pluginname') {
+            continue;
+        }
+
         if ($check->key !== '') {
-            echo "OK [{$check->rule}] {$check->target()}\n";
+            echo "  ▶ OK {$check->target()}\n";
         } else {
-            echo "OK [{$check->rule}] {$check->message}\n";
+            echo "  ▶ OK {$check->message}\n";
         }
         continue;
     }
@@ -120,13 +140,13 @@ foreach ($checks as $check) {
         $message = githubEscape($check->message);
         $file = githubEscape($check->file);
         $target = $check->target();
-        echo "ERROR [{$check->rule}] {$target}\n";
-        echo "::error file={$file},line={$check->line},title=Moodle validate {$check->rule}::{$message}\n";
+        echo "  ▶ ERROR {$target}\n";
+        echo "::error file={$file},line={$check->line},title=Moodle validate {$rule}::{$message}\n";
         continue;
     }
 
-    echo "ERROR [{$check->rule}] {$check->file}:{$check->line}\n";
-    echo "  {$check->message}\n";
+    echo "  ▶ ERROR {$check->file}:{$check->line}\n";
+    echo "    {$check->message}\n";
 }
 
 if ($format === 'text') {
