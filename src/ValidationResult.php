@@ -95,6 +95,8 @@ final class ValidationResult implements JsonSerializable {
                 $groups[$rule]['summary']['ok']++;
             }
 
+            $guidance = Guidance::for($check);
+
             $groups[$rule]['checks'][] = [
                 'status' => $status,
                 'rule' => $rule,
@@ -103,6 +105,8 @@ final class ValidationResult implements JsonSerializable {
                 'key' => $check->key,
                 'target' => $check->target(),
                 'message' => $check->message,
+                'explanation' => $guidance['explanation'],
+                'howToFix' => $guidance['howToFix'],
                 'languageString' => $check->languageString,
             ];
         }
