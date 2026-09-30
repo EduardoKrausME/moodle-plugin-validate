@@ -155,6 +155,14 @@ For GitHub annotations:
 php bin/moodle-string-validate /path/to/plugin --format=github
 ```
 
+For machine-readable structured output:
+
+```bash
+php bin/moodle-string-validate /path/to/plugin --format=json
+```
+
+The JSON contract is the same structured result exposed by the PHP library. It contains the component, overall status, summary counters, validation groups, and each individual check with status, rule, file, line, key, target, and message.
+
 Options:
 
 ```text
@@ -162,6 +170,7 @@ Options:
 --allow-empty   Do not fail when a required string exists but is empty
 --format=text   Human-readable output. Default
 --format=github GitHub Actions annotations
+--format=json   Structured JSON output for integrations
 ```
 
 Exit codes:
@@ -171,6 +180,62 @@ Exit codes:
 1  One or more validation errors were found
 2  Invalid arguments or runtime error
 ```
+
+## PHP library API
+
+Integrations that already run in PHP should not execute the CLI and parse its text output. Load the library and consume the structured result directly:
+
+```php
+require '/path/to/moodle-plugin-validate/autoload.php';
+
+use EduardoKraus\MoodleStringValidate\Validator;
+
+$result = (new Validator())->validateResult('/path/to/plugin');
+$data = $result->toArray();
+```
+
+The returned structure follows this contract:
+
+```json
+{
+  "schema": 1,
+  "component": "local_example",
+  "success": false,
+  "status": "error",
+  "summary": {
+    "total": 12,
+    "ok": 10,
+    "warnings": 1,
+    "errors": 1
+  },
+  "groups": [
+    {
+      "rule": "version",
+      "status": "ok",
+      "summary": {
+        "total": 3,
+        "ok": 3,
+        "warnings": 0,
+        "errors": 0
+      },
+      "checks": [
+        {
+          "status": "ok",
+          "rule": "version",
+          "file": "version.php",
+          "line": 1,
+          "key": "",
+          "target": "version.php",
+          "message": "version.php exists in project root.",
+          "languageString": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+The CLI format is now only a presentation layer over this result: GitHub Actions uses `--format=github`, terminal use can keep `--format=text`, and integrations can use `--format=json` or consume `ValidationResult` directly.
 
 ## GitHub Action
 
