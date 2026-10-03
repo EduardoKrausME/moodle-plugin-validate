@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parent
 # Execution order is intentional. Auto-fix deterministic formatting first, then
 # execute the project's complete canonical validation suite.
 STEPS = [
+    ROOT / "scripts" / "normalize_version.py",
     ROOT / "scripts" / "normalize_lang.py",
     ROOT / "scripts" / "validate_all.py",
 ]
