@@ -14,10 +14,7 @@ The validator checks that the plugin repository contains:
 - a README in the project root: `README.md`, `README`, `README.txt`, or `README.rst`;
 - `version.php` in the plugin root;
 - a valid `$plugin->component`;
-- a non-empty `$plugin->release`, which must be the first `$plugin` property assignment;
-- a positive numeric `$plugin->version`, which must be the second `$plugin` property assignment;
-- no `$plugin->supported` branch-range declaration such as `[405, 505]`;
-- when `$plugin->requires` is declared, it must be a scalar numeric Moodle build version and never an array.
+- a positive numeric `$plugin->version`.
 
 ### Language strings
 
