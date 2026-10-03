@@ -22,9 +22,9 @@ file_put_contents($root . '/lang/en/local_example.php', <<<'PHPFILE'
 $string['pluginname'] = 'Example';
 PHPFILE);
 file_put_contents($root . '/templates/example.mustache', <<<'MUSTACHE'
-<a href="{{config.url}}">Bad href config.url</a>
+<a href="{{{config.url}}}">Bad href config.url</a>
 <a href="{{.}}">Bad href dot</a>
-<img src="{{config.url}}" alt="Bad src config.url">
+<img src="{{{config.url}}}" alt="Bad src config.url">
 <img src="{{.}}" alt="Bad src dot">
 <a href="{{{config.url}}}">Good href config.url</a>
 <a href="{{{.}}}">Good href dot</a>

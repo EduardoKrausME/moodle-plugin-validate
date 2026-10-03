@@ -34,7 +34,7 @@ final class Guidance {
                     . 'for URL values in href and src attributes.',
                 'howToFix' =>
                     'Change the URL expression in the reported attribute from double braces to triple braces. '
-                    . 'For example, use href="{{{url}}}" instead of href="{{url}}".',
+                    . 'For example, use href="{{{url}}}" instead of href="{{{url}}}".',
             ];
         }
 
