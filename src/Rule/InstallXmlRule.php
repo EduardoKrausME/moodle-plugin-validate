@@ -12,6 +12,18 @@ final class InstallXmlRule implements RuleInterface {
     private const TABLE_NAME_MAX_LENGTH = 53;
     private const FIELD_NAME_MAX_LENGTH = 63;
 
+    /**
+     * Legacy table names kept for backwards compatibility.
+     *
+     * @var array<string, string[]>
+     */
+    private const LEGACY_TABLE_PREFIX_EXCEPTIONS = [
+        'proctoringpolicy_password' => [
+            'local_kppassword_req',
+            'local_kppassword_attempt',
+        ],
+    ];
+
     public function name(): string {
         return 'installxml';
     }
@@ -57,7 +69,14 @@ final class InstallXmlRule implements RuleInterface {
             : $context->component;
 
         foreach ($tables as $tablename => $table) {
-            $this->validateTableName($checks, $relative, $table, $tablename, $expectedprefix);
+            $this->validateTableName(
+                $checks,
+                $relative,
+                $table,
+                $tablename,
+                $expectedprefix,
+                $context->component,
+            );
             $this->validateTable($checks, $relative, $table, $tablename);
         }
 
@@ -109,6 +128,7 @@ final class InstallXmlRule implements RuleInterface {
         stdClass $table,
         string $tablename,
         string $expectedprefix,
+        string $component,
     ): void {
         if (strlen($tablename) > self::TABLE_NAME_MAX_LENGTH) {
             $checks[] = $this->error(
@@ -124,13 +144,24 @@ final class InstallXmlRule implements RuleInterface {
                 "Invalid table name '{$tablename}'; use lowercase a-z, 0-9 and underscore only.",
             );
         }
-        if ($tablename !== $expectedprefix && !str_starts_with($tablename, $expectedprefix . '_')) {
+        $hasexpectedprefix = $tablename === $expectedprefix
+            || str_starts_with($tablename, $expectedprefix . '_');
+
+        if (!$hasexpectedprefix && !$this->isLegacyTablePrefixException($component, $tablename)) {
             $checks[] = $this->error(
                 $relative,
                 $table->line,
                 "Table '{$tablename}' must use plugin table prefix '{$expectedprefix}'.",
             );
         }
+    }
+
+    private function isLegacyTablePrefixException(string $component, string $tablename): bool {
+        return in_array(
+            $tablename,
+            self::LEGACY_TABLE_PREFIX_EXCEPTIONS[$component] ?? [],
+            true,
+        );
     }
 
     /** @param Check[] $checks */
