@@ -65,10 +65,10 @@ def normalize_content(content: str, *, filename: Path) -> str:
                 f"{filename}: $plugin->{required} must be assigned exactly once."
             )
 
-    if "supported" in by_name:
+    if SUPPORTED_RE.search(content) and "supported" not in by_name:
         raise VersionNormalizationError(
-            f"{filename}: remove $plugin->supported. This project does not use "
-            "Moodle-version range arrays such as [405, 505]."
+            f"{filename}: found an unsupported or multiline $plugin->supported "
+            "assignment. Remove it manually."
         )
 
     for index, value in by_name.get("requires", []):
@@ -85,14 +85,19 @@ def normalize_content(content: str, *, filename: Path) -> str:
     release_line = lines[release_index]
     version_line = lines[version_index]
 
-    # Reordering is deterministic and does not alter the assignment text itself.
+    # Reordering is deterministic. A simple $plugin->supported assignment is
+    # removed because this repository explicitly does not use Moodle branch
+    # range arrays such as [405, 505].
+    supported_indexes = [index for index, _value in by_name.get("supported", [])]
+    removed_indexes = [release_index, version_index, *supported_indexes]
+
     # Remove from bottom to top so indices remain valid.
-    for index in sorted((release_index, version_index), reverse=True):
+    for index in sorted(set(removed_indexes), reverse=True):
         del lines[index]
 
     # Removing an earlier line shifts the original insertion point.
     removed_before = sum(
-        1 for index in (release_index, version_index) if index < first_assignment_index
+        1 for index in set(removed_indexes) if index < first_assignment_index
     )
     insertion_index = first_assignment_index - removed_before
 
