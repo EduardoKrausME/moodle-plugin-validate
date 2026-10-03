@@ -27,7 +27,24 @@ python3 .chatgpt/run.py --check /absolute/path/to/plugin
 
 ## Finishing pipeline
 
-### 1. Normalize version.php
+### 1. Normalize PHP headers
+
+The script `.chatgpt/scripts/normalize_php_headers.py` is a formatter, not a validator rule.
+
+It processes every first-party `.php` file in the plugin and guarantees the complete Moodle file header:
+
+- the full GPL boilerplate begins immediately after `<?php`;
+- a separate file PHPDoc block follows the GPL text;
+- the PHPDoc contains a short file description, `@package`, `@copyright` and `@license`;
+- `@package` is discovered from the closest `version.php`, so bundled subplugins receive their own Frankenstyle component;
+- existing copyrights are preserved; when a file has no copyright, the formatter reuses the plugin's Eduardo Kraus copyright or creates `<year> Eduardo Kraus {@link https://eduardokraus.com}`;
+- a partial or malformed leading Moodle header is removed and replaced with the complete canonical block;
+- executable PHP below the header is preserved;
+- `vendor`, `node_modules`, `thirdparty`, `third_party` and repository/editor metadata directories are not rewritten.
+
+This convention is intentionally implemented only as post-processing. It must not create a PHP validator rule merely to enforce formatting.
+
+### 2. Normalize version.php
 
 The script `.chatgpt/scripts/normalize_version.py` is a maintenance formatter, not a validator rule.
 
@@ -39,7 +56,7 @@ It rewrites `version.php` so the two values normally changed during a release ar
 - a simple `$plugin->supported = [...];` line is removed as part of the cleanup convention;
 - it does not add any equivalent rule to `VersionRule.php` and does not make this layout part of plugin validation.
 
-### 2. Normalize language files
+### 3. Normalize language files
 
 The script `.chatgpt/scripts/normalize_lang.py` processes every PHP language file directly under:
 
@@ -59,7 +76,7 @@ For every supported `$string` assignment it must:
 
 The Moodle locale directory is `pt_br`, with underscore. A `lang/pt-br` directory is considered an error.
 
-### 3. Run every project validator
+### 4. Run every project validator
 
 The script `.chatgpt/scripts/validate_all.py` is the Python execution layer for the complete validator suite.
 
