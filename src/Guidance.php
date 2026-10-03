@@ -50,6 +50,43 @@ final class Guidance {
         }
 
         if ($check->rule === 'version') {
+            if (str_contains($message, '$plugin->supported')) {
+                return [
+                    'explanation' =>
+                        'This project intentionally does not publish Moodle branch ranges through '
+                        . '$plugin->supported arrays such as [405, 505].',
+                    'howToFix' =>
+                        'Remove the $plugin->supported assignment from version.php. Keep compatibility '
+                        . 'requirements in the scalar $plugin->requires value when a minimum Moodle version is needed.',
+                ];
+            }
+
+            if (str_contains($message, '$plugin->requires must be a scalar')) {
+                return [
+                    'explanation' =>
+                        '$plugin->requires is Moodle\'s minimum core build requirement and must be one numeric '
+                        . 'version value, not a branch-range array.',
+                    'howToFix' =>
+                        'Replace the array with the appropriate numeric Moodle build number, for example '
+                        . '$plugin->requires = 2022112800; for a chosen minimum core version.',
+                ];
+            }
+
+            if (
+                str_contains($message, '$plugin->release')
+                || str_contains($message, 'first $plugin property')
+                || str_contains($message, 'second $plugin property')
+            ) {
+                return [
+                    'explanation' =>
+                        'This project uses a deterministic version.php layout so release metadata is immediately '
+                        . 'visible and version changes are consistently placed.',
+                    'howToFix' =>
+                        'Make $plugin->release the first $plugin assignment and $plugin->version the second. '
+                        . 'The finishing script normalize_version.py can reorder existing assignments safely.',
+                ];
+            }
+
             if (str_contains($message, 'Missing required version.php')) {
                 return [
                     'explanation' =>
