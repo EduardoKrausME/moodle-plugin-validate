@@ -105,11 +105,7 @@ def decode_php_string(raw: str, quote: str, *, filename: Path, key: str) -> str:
             index += 2
             continue
 
-        controls = {
-            "n": "\n",
-            "r": "\r",
-        }
-        if escaped in controls:
+        if escaped in {"n", "r", "t", "v", "e", "f", "x", "u"} or escaped.isdigit():
             raise NormalizationError(
                 f"{filename}: $string[{key!r}] uses \\{escaped} inside a "
                 "double-quoted value. Convert that value manually before running "
