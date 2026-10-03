@@ -27,7 +27,18 @@ python3 .chatgpt/run.py --check /absolute/path/to/plugin
 
 ## Finishing pipeline
 
-### 1. Normalize language files
+### 1. Normalize version.php
+
+The script `.chatgpt/scripts/normalize_version.py` enforces this project convention:
+
+- `$plugin->release` is the first `$plugin` property assignment;
+- `$plugin->version` is the second `$plugin` property assignment;
+- `$plugin->supported` is not allowed; do not use Moodle branch-range arrays such as `[405, 505]`;
+- `$plugin->requires`, when present, must be a scalar numeric Moodle build version and never an array;
+- existing release/version assignments are reordered automatically when safe;
+- missing metadata or unsafe/ambiguous syntax causes the finishing step to fail instead of guessing.
+
+### 2. Normalize language files
 
 The script `.chatgpt/scripts/normalize_lang.py` processes every PHP language file directly under:
 
@@ -47,7 +58,7 @@ For every supported `$string` assignment it must:
 
 The Moodle locale directory is `pt_br`, with underscore. A `lang/pt-br` directory is considered an error.
 
-### 2. Run every project validator
+### 3. Run every project validator
 
 The script `.chatgpt/scripts/validate_all.py` is the Python execution layer for the complete validator suite.
 
