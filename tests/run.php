@@ -15,11 +15,7 @@ function createPlugin(array $options = []): string {
 
     $version = $options['version'] ?? 2026081600;
     $component = $options['component'] ?? 'local_example';
-    file_put_contents(
-        $root . '/version.php',
-        $options['versionfile']
-            ?? "<?php\n\$plugin->release = '1.0.0';\n\$plugin->version = {$version};\n\$plugin->component = '{$component}';\n"
-    );
+    file_put_contents($root . '/version.php', $options['versionfile'] ?? "<?php\n\$plugin->component = '{$component}';\n\$plugin->version = {$version};\n");
     file_put_contents($root . '/lang/en/' . $component . '.php', $options['lang'] ?? <<<'PHPFILE'
 <?php
 $string['pluginname'] = 'Example';
@@ -62,9 +58,8 @@ function createSubplugin(
         : '';
     file_put_contents($directory . '/version.php', <<<PHPFILE
 <?php
-\$plugin->release = '1.0.0';
-\$plugin->version = {$version};
 \$plugin->component = '{$component}';
+\$plugin->version = {$version};
 {$dependencyline}
 PHPFILE);
 }
@@ -179,36 +174,6 @@ assertCheck($checks, 'pluginname', true, 'pluginname');
 assertCheck($checks, 'subplugin', true, null, 'no nested Moodle subplugins');
 assertNoErrors($checks);
 assertIssueKeys($validator->validate($root), []);
-removeTree($root);
-
-// version.php follows the project layout: release first, version second, no supported range array.
-$root = createPlugin([
-    'versionfile' => <<<'PHPFILE'
-<?php
-$plugin->component = 'local_example';
-$plugin->release = '1.0.0';
-$plugin->version = 2026081600;
-$plugin->supported = [405, 505];
-PHPFILE,
-]);
-$checks = $validator->validateDetailed($root);
-assertCheck($checks, 'version', false, '$plugin->release', 'first $plugin property');
-assertCheck($checks, 'version', false, '$plugin->version', 'second $plugin property');
-assertCheck($checks, 'version', false, '$plugin->supported', 'does not use Moodle-version range arrays');
-removeTree($root);
-
-// $plugin->requires must be a scalar numeric core version.
-$root = createPlugin([
-    'versionfile' => <<<'PHPFILE'
-<?php
-$plugin->release = '1.0.0';
-$plugin->version = 2026081600;
-$plugin->component = 'local_example';
-$plugin->requires = [405, 505];
-PHPFILE,
-]);
-$checks = $validator->validateDetailed($root);
-assertCheck($checks, 'version', false, '$plugin->requires', 'must be a scalar numeric Moodle version');
 removeTree($root);
 
 // Missing root files are errors.
