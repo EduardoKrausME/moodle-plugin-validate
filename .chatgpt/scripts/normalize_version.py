@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Normalize the ordering and version-policy metadata in version.php."""
+"""Normalize version.php for easier release maintenance.
+
+This is a formatter, not a Moodle validation rule. It moves the existing
+$plugin->release and $plugin->version assignments to the top, preserves every
+other assignment in its original relative order, and removes a simple
+$plugin->supported assignment as a project cleanup convention.
+"""
 
 from __future__ import annotations
 
@@ -12,25 +18,24 @@ from pathlib import Path
 ASSIGNMENT_RE = re.compile(
     r"^(?P<indent>\s*)\$plugin->(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.+?);(?P<tail>\s*(?://.*|#.*)?)$"
 )
-ARRAY_START_RE = re.compile(r"^(?:\[|array\s*\()", re.IGNORECASE)
 
 
 class VersionNormalizationError(RuntimeError):
-    """Raised when version.php cannot be normalized safely."""
+    """Raised when version.php cannot be reformatted safely."""
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Normalize Moodle version.php so release and version are the first "
-            "plugin properties and unsupported version-range arrays are absent."
+            "Format version.php with release first and version second, without "
+            "turning the convention into a validation rule."
         )
     )
     parser.add_argument("plugin", type=Path, help="Path to the Moodle plugin root.")
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Report required changes without rewriting version.php.",
+        help="Report whether version.php would be reformatted without writing it.",
     )
     return parser.parse_args()
 
@@ -39,66 +44,49 @@ def normalize_content(content: str, *, filename: Path) -> str:
     had_final_newline = content.endswith("\n")
     lines = content.splitlines()
 
-    assignments: list[tuple[int, str, str]] = []
+    assignments: list[tuple[int, str]] = []
     for index, line in enumerate(lines):
         match = ASSIGNMENT_RE.match(line)
         if match:
-            assignments.append((index, match.group("name"), match.group("value").strip()))
+            assignments.append((index, match.group("name")))
 
     if not assignments:
         raise VersionNormalizationError(
             f"{filename}: no $plugin->... assignments were found."
         )
 
-    by_name: dict[str, list[tuple[int, str]]] = {}
-    for index, name, value in assignments:
-        by_name.setdefault(name, []).append((index, value))
+    indexes_by_name: dict[str, list[int]] = {}
+    for index, name in assignments:
+        indexes_by_name.setdefault(name, []).append(index)
 
     for required in ("release", "version"):
-        occurrences = by_name.get(required, [])
-        if not occurrences:
+        indexes = indexes_by_name.get(required, [])
+        if not indexes:
             raise VersionNormalizationError(
-                f"{filename}: missing required $plugin->{required} assignment."
+                f"{filename}: cannot format because $plugin->{required} is missing."
             )
-        if len(occurrences) != 1:
+        if len(indexes) != 1:
             raise VersionNormalizationError(
-                f"{filename}: $plugin->{required} must be assigned exactly once."
-            )
-
-    if SUPPORTED_RE.search(content) and "supported" not in by_name:
-        raise VersionNormalizationError(
-            f"{filename}: found an unsupported or multiline $plugin->supported "
-            "assignment. Remove it manually."
-        )
-
-    for index, value in by_name.get("requires", []):
-        if ARRAY_START_RE.match(value):
-            raise VersionNormalizationError(
-                f"{filename}:{index + 1}: $plugin->requires must be a scalar "
-                "numeric Moodle version, never an array."
+                f"{filename}: cannot format because $plugin->{required} appears "
+                "more than once."
             )
 
-    release_index = by_name["release"][0][0]
-    version_index = by_name["version"][0][0]
+    release_index = indexes_by_name["release"][0]
+    version_index = indexes_by_name["version"][0]
     first_assignment_index = assignments[0][0]
 
     release_line = lines[release_index]
     version_line = lines[version_index]
 
-    # Reordering is deterministic. A simple $plugin->supported assignment is
-    # removed because this repository explicitly does not use Moodle branch
-    # range arrays such as [405, 505].
-    supported_indexes = [index for index, _value in by_name.get("supported", [])]
-    removed_indexes = [release_index, version_index, *supported_indexes]
+    # $plugin->supported is not part of this project's preferred version.php.
+    # Remove only simple one-line assignments that were parsed safely.
+    supported_indexes = indexes_by_name.get("supported", [])
 
-    # Remove from bottom to top so indices remain valid.
-    for index in sorted(set(removed_indexes), reverse=True):
+    removed_indexes = {release_index, version_index, *supported_indexes}
+    for index in sorted(removed_indexes, reverse=True):
         del lines[index]
 
-    # Removing an earlier line shifts the original insertion point.
-    removed_before = sum(
-        1 for index in set(removed_indexes) if index < first_assignment_index
-    )
+    removed_before = sum(1 for index in removed_indexes if index < first_assignment_index)
     insertion_index = first_assignment_index - removed_before
 
     lines[insertion_index:insertion_index] = [release_line, version_line]
@@ -131,8 +119,8 @@ def main() -> int:
 
     if args.check:
         print(
-            "ERROR: version.php is not normalized. The first two $plugin "
-            "assignments must be release and version.",
+            "CHANGE: version.php would be reformatted with release first and "
+            "version second.",
             file=sys.stderr,
         )
         return 1
