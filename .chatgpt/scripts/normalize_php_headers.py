@@ -165,13 +165,15 @@ def default_copyright(component_root: Path, plugin: Path) -> str:
         if copyrights:
             return copyrights[0]
 
-    # Reuse an existing project copyright before inventing a new one.
+    # Reuse this project's own copyright when it already exists, but do not
+    # accidentally turn a third-party file's author into the plugin default.
     for candidate in sorted(component_root.rglob("*.php")):
         if not candidate.is_file() or is_excluded(candidate, plugin):
             continue
         copyrights = extract_copyrights(read_text(candidate))
-        if copyrights:
-            return copyrights[0]
+        for value in copyrights:
+            if "Eduardo Kraus" in value:
+                return value
 
     return (
         f"{version_year(component_root)} Eduardo Kraus "
