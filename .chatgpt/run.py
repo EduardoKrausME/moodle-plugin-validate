@@ -11,9 +11,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
-# Execution order is intentional. Add new finishing steps here.
+# Execution order is intentional. Auto-fix deterministic formatting first, then
+# execute the project's complete canonical validation suite.
 STEPS = [
     ROOT / "scripts" / "normalize_lang.py",
+    ROOT / "scripts" / "validate_all.py",
 ]
 
 
@@ -29,7 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Check whether files are already normalized without rewriting them.",
+        help="Check files and run validators without rewriting the plugin.",
     )
     return parser.parse_args()
 
