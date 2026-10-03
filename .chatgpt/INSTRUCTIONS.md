@@ -33,7 +33,7 @@ The script `.chatgpt/scripts/normalize_version.py` enforces this project convent
 
 - `$plugin->release` is the first `$plugin` property assignment;
 - `$plugin->version` is the second `$plugin` property assignment;
-- `$plugin->supported` is not allowed; do not use Moodle branch-range arrays such as `[405, 505]`;
+- `$plugin->supported` is not allowed; a simple assignment such as `$plugin->supported = [405, 505];` is removed automatically;
 - `$plugin->requires`, when present, must be a scalar numeric Moodle build version and never an array;
 - existing release/version assignments are reordered automatically when safe;
 - missing metadata or unsafe/ambiguous syntax causes the finishing step to fail instead of guessing.
