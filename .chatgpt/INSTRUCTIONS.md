@@ -29,14 +29,15 @@ python3 .chatgpt/run.py --check /absolute/path/to/plugin
 
 ### 1. Normalize version.php
 
-The script `.chatgpt/scripts/normalize_version.py` enforces this project convention:
+The script `.chatgpt/scripts/normalize_version.py` is a maintenance formatter, not a validator rule.
 
-- `$plugin->release` is the first `$plugin` property assignment;
-- `$plugin->version` is the second `$plugin` property assignment;
-- `$plugin->supported` is not allowed; a simple assignment such as `$plugin->supported = [405, 505];` is removed automatically;
-- `$plugin->requires`, when present, must be a scalar numeric Moodle build version and never an array;
-- existing release/version assignments are reordered automatically when safe;
-- missing metadata or unsafe/ambiguous syntax causes the finishing step to fail instead of guessing.
+It rewrites `version.php` so the two values normally changed during a release are always at the top:
+
+- `$plugin->release` is the first `$plugin` assignment;
+- `$plugin->version` is the second `$plugin` assignment;
+- all other `$plugin` assignments keep their existing relative order;
+- a simple `$plugin->supported = [...];` line is removed as part of the cleanup convention;
+- it does not add any equivalent rule to `VersionRule.php` and does not make this layout part of plugin validation.
 
 ### 2. Normalize language files
 
