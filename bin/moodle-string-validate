@@ -35,6 +35,42 @@ function githubEscape(string $value): string {
     return str_replace(["%", "\r", "\n", ":", ","], ["%25", "%0D", "%0A", "%3A", "%2C"], $value);
 }
 
+function githubFileUrl(string $pluginpath, string $file, int $line): ?string {
+    $serverurl = getenv('GITHUB_SERVER_URL');
+    $repository = getenv('GITHUB_REPOSITORY');
+    $sha = getenv('GITHUB_SHA');
+    $workspace = getenv('GITHUB_WORKSPACE');
+
+    if (!$serverurl || !$repository || !$sha || !$workspace) {
+        return null;
+    }
+
+    $pluginroot = realpath($pluginpath);
+    $workspaceroot = realpath($workspace);
+    if ($pluginroot === false || $workspaceroot === false) {
+        return null;
+    }
+
+    $filepath = str_replace(
+        '\\',
+        '/',
+        rtrim($pluginroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($file, '/\\'),
+    );
+    $workspaceprefix = rtrim(str_replace('\\', '/', $workspaceroot), '/') . '/';
+    if (!str_starts_with($filepath, $workspaceprefix)) {
+        return null;
+    }
+
+    $relative = substr($filepath, strlen($workspaceprefix));
+    $encodedpath = implode('/', array_map('rawurlencode', explode('/', $relative)));
+
+    return rtrim($serverurl, '/')
+        . '/' . $repository
+        . '/blob/' . rawurlencode($sha)
+        . '/' . $encodedpath
+        . '#L' . $line;
+}
+
 /**
  * @param array<string, mixed> $payload
  */
@@ -159,6 +195,10 @@ foreach ($data['groups'] as $group) {
 
         if ($format === 'github') {
             echo "  ▶ ERROR {$check['target']}\n";
+            $fileurl = githubFileUrl($path, $check['file'], $check['line']);
+            if ($fileurl !== null) {
+                echo "    File: {$fileurl}\n";
+            }
             echo '::error file=' . githubEscape($check['file'])
                 . ',line=' . $check['line']
                 . ',title=Moodle validate ' . githubEscape($group['rule'])
