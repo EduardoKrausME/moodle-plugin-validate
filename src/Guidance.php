@@ -25,6 +25,19 @@ final class Guidance {
 
         $message = $check->message;
 
+        if ($check->rule === 'amd') {
+            return [
+                'explanation' =>
+                    'Moodle loads plugin AMD modules from the compiled files in amd/build. A missing build, a '
+                    . 'duplicated .min.min.js name, or a literal PHP/Mustache reference to a module that does not '
+                    . 'exist can turn into a RequireJS load failure at runtime.',
+                'howToFix' =>
+                    'Keep every amd/src/<module>.js paired with amd/build/<module>.min.js, remove any accidental '
+                    . '*.min.min.js files, and correct js_call_amd() or Mustache require() references so they point '
+                    . 'to an AMD module provided by this plugin. Rebuild AMD output after changing source files.',
+            ];
+        }
+
         if ($check->rule === 'mustacheurl') {
             return [
                 'explanation' =>
