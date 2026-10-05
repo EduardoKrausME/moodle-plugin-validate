@@ -386,11 +386,13 @@ removeTree($root);
 // Direct jQuery AJAX calls to PHP endpoints are warnings.
 $root = createPlugin();
 mkdir($root . '/amd/src', 0777, true);
+mkdir($root . '/amd/build', 0777, true);
 file_put_contents($root . '/amd/src/request.js', <<<'JS'
 define(['jquery'], function($) {
     $.ajax({url: 'ajax.php', method: 'POST'});
 });
 JS);
+file_put_contents($root . '/amd/build/request.min.js', 'define([], function() {});');
 $checks = $validator->validateDetailed($root);
 assertWarning($checks, 'ajax', 'Direct jQuery $.ajax() call');
 removeTree($root);
@@ -398,11 +400,72 @@ removeTree($root);
 // Large inline HTML in JavaScript is a warning, not an error.
 $root = createPlugin();
 mkdir($root . '/amd/src', 0777, true);
+mkdir($root . '/amd/build', 0777, true);
 $html = '<div class="panel">' . str_repeat('<span>Example content</span>', 12) . '</div>';
 file_put_contents($root . '/amd/src/ui.js', "define([], function() {\n    element.innerHTML = `{$html}`;\n});\n");
+file_put_contents($root . '/amd/build/ui.min.js', 'define([], function() {});');
 $checks = $validator->validateDetailed($root);
 assertWarning($checks, 'javascript', 'Large inline HTML fragment');
 assertIssueKeys($validator->validate($root), []);
+removeTree($root);
+
+// AMD source modules require matching build output, and PHP/Mustache references to this plugin are resolved.
+$root = createPlugin();
+mkdir($root . '/amd/src/course', 0777, true);
+mkdir($root . '/amd/build/course', 0777, true);
+mkdir($root . '/templates', 0777, true);
+file_put_contents($root . '/amd/src/course/player.js', "define([], function() { return {}; });\n");
+file_put_contents($root . '/amd/build/course/player.min.js', "define([],function(){return{}});\n");
+file_put_contents($root . '/amd/build/legacy.min.js', "define([],function(){return{}});\n");
+file_put_contents($root . '/view.php', <<<'PHPFILE'
+<?php
+$PAGE->requires->js_call_amd('local_example/course/player', 'init');
+$PAGE->requires->js_call_amd('local_example/legacy', 'init');
+$PAGE->requires->js_call_amd('core/str', 'get_strings');
+// $PAGE->requires->js_call_amd('local_example/commented', 'init');
+PHPFILE);
+file_put_contents($root . '/templates/player.mustache', <<<'MUSTACHE'
+<div>Player</div>
+{{#js}}
+require(['local_example/course/player', 'core/templates'], function(Player, Templates) {
+});
+{{/js}}
+MUSTACHE);
+$checks = $validator->validateDetailed($root);
+assertCheck($checks, 'amd', true, 'local_example/course/player', 'has compiled build');
+assertCheck($checks, 'amd', true, 'local_example/course/player', 'resolves to a module');
+assertCheck($checks, 'amd', true, 'local_example/legacy', 'resolves to a module');
+if (findCheck($checks, 'amd', 'core/str') !== null || findCheck($checks, 'amd', 'core/templates') !== null) {
+    fail('AMD references to core or another component must not be validated against the current plugin.');
+}
+if (findCheck($checks, 'amd', 'local_example/commented') !== null) {
+    fail('Commented PHP js_call_amd() references must be ignored.');
+}
+assertNoErrors($checks);
+removeTree($root);
+
+// Missing AMD builds, duplicated minification suffixes, and unresolved current-plugin references are errors.
+$root = createPlugin();
+mkdir($root . '/amd/src', 0777, true);
+mkdir($root . '/amd/build', 0777, true);
+mkdir($root . '/templates', 0777, true);
+file_put_contents($root . '/amd/src/missingbuild.js', "define([], function() {});\n");
+file_put_contents($root . '/amd/build/broken.min.min.js', "define([],function(){});\n");
+file_put_contents($root . '/view.php', <<<'PHPFILE'
+<?php
+$PAGE->requires->js_call_amd('local_example/php_missing', 'init');
+PHPFILE);
+file_put_contents($root . '/templates/missing.mustache', <<<'MUSTACHE'
+{{#js}}
+require(['local_example/template_missing'], function(Missing) {
+});
+{{/js}}
+MUSTACHE);
+$checks = $validator->validateDetailed($root);
+assertCheck($checks, 'amd', false, 'local_example/missingbuild', 'missing compiled build');
+assertCheck($checks, 'amd', false, 'amd/build/broken.min.min.js', '.min.min.js suffix');
+assertCheck($checks, 'amd', false, 'local_example/php_missing', 'does not resolve');
+assertCheck($checks, 'amd', false, 'local_example/template_missing', 'does not resolve');
 removeTree($root);
 
 // Moodle-root classpaths must resolve the deepest plugin-relative file before basename fallbacks.
