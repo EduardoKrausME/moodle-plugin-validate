@@ -118,6 +118,26 @@ $plugin->dependencies = [
 
 `ANY_VERSION` is also accepted as a valid explicit dependency.
 
+## AMD modules
+
+The validator checks the plugin AMD module layout without executing JavaScript.
+
+For every JavaScript file under `amd/src/`, the same relative module path must have a compiled `amd/build/*.min.js` file. For example:
+
+```text
+amd/src/course/player.js
+amd/build/course/player.min.js
+```
+
+The validator also rejects any file under `amd/build/` ending in `*.min.min.js`, which normally indicates that an already-minified filename was processed again.
+
+Literal references to the current plugin are checked in:
+
+- PHP calls such as `$PAGE->requires->js_call_amd('local_example/player', 'init')`;
+- Mustache `{{#js}}` blocks using RequireJS arrays such as `require(['local_example/player'], ...)`.
+
+References to `core/*` or another plugin component are intentionally ignored because this validator does not bootstrap a complete Moodle installation. A current-plugin reference is accepted when either its source file or compiled build exists; independently, every source file still requires its corresponding compiled build.
+
 ## Advisory warnings
 
 Warnings are reported but do not change the successful exit code when there are no errors.
