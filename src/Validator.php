@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EduardoKraus\MoodleStringValidate;
 
 use EduardoKraus\MoodleStringValidate\Rule\AccessRule;
+use EduardoKraus\MoodleStringValidate\Rule\AmdModulesRule;
 use EduardoKraus\MoodleStringValidate\Rule\CacheRule;
 use EduardoKraus\MoodleStringValidate\Rule\DbReferencesRule;
 use EduardoKraus\MoodleStringValidate\Rule\ExternalApiRule;
@@ -53,6 +54,7 @@ final class Validator {
             new GetStringRule(),
             new TranslationPlaceholderRule(),
             new MoodleExceptionRule(),
+            new AmdModulesRule(),
             new LegacyAjaxRule(),
             new JavascriptHtmlRule(),
             new MustacheUrlRule(),
