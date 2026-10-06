@@ -7,6 +7,9 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class ModCourseContentsRule.
+ */
 final class ModCourseContentsRule implements RuleInterface {
     private const CACHED_CM_INFO_FIELDS = [
         'name' => 'string',
@@ -46,10 +49,21 @@ final class ModCourseContentsRule implements RuleInterface {
         'FEATURE_QUICKCREATE',
     ];
 
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'mod_course_contents';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         if (!str_starts_with($context->component, 'mod_')) {
             return [];
@@ -267,6 +281,14 @@ final class ModCourseContentsRule implements RuleInterface {
         return $checks;
     }
 
+    /**
+     * Method validateSupportsFeatureReturn.
+     *
+     * @param string $feature Parameter feature.
+     * @param string $expression Parameter expression.
+     * @param int $line Parameter line.
+     * @return ?Check Return value.
+     */
     private function validateSupportsFeatureReturn(string $feature, string $expression, int $line): ?Check {
         $key = 'supports:' . $feature;
 
@@ -601,11 +623,23 @@ final class ModCourseContentsRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method isKnownSupportConstant.
+     *
+     * @param string $expression Parameter expression.
+     * @return bool Return value.
+     */
     private function isKnownSupportConstant(string $expression): bool {
         $expression = $this->stripOuterParentheses(trim($expression));
         return preg_match('/^(?:MOD_ARCHETYPE|MOD_PURPOSE)_[A-Z0-9_]+$/', $expression) === 1;
     }
 
+    /**
+     * Method literalType.
+     *
+     * @param string $expression Parameter expression.
+     * @return ?string Return value.
+     */
     private function literalType(string $expression): ?string {
         $expression = $this->stripOuterParentheses(trim($expression));
         if ($this->literalString($expression) !== null) {
@@ -632,6 +666,12 @@ final class ModCourseContentsRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method literalString.
+     *
+     * @param string $expression Parameter expression.
+     * @return ?string Return value.
+     */
     private function literalString(string $expression): ?string {
         if (strlen($expression) < 2) {
             return null;
@@ -648,6 +688,13 @@ final class ModCourseContentsRule implements RuleInterface {
         return stripcslashes($value);
     }
 
+    /**
+     * Method isCompatibleType.
+     *
+     * @param string $expected Parameter expected.
+     * @param string $actual Parameter actual.
+     * @return bool Return value.
+     */
     private function isCompatibleType(string $expected, string $actual): bool {
         if ($expected === 'mixed') {
             return true;
@@ -655,6 +702,12 @@ final class ModCourseContentsRule implements RuleInterface {
         return $expected === $actual;
     }
 
+    /**
+     * Method stripOuterParentheses.
+     *
+     * @param string $expression Parameter expression.
+     * @return string Return value.
+     */
     private function stripOuterParentheses(string $expression): string {
         while (strlen($expression) >= 2 && $expression[0] === '(' && $expression[strlen($expression) - 1] === ')') {
             $expression = trim(substr($expression, 1, -1));

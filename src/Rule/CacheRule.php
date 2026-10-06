@@ -6,11 +6,25 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class CacheRule.
+ */
 final class CacheRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'cache';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/db/caches.php';
         if (!is_file($file)) {

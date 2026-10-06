@@ -7,11 +7,25 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class PrivacyRule.
+ */
 final class PrivacyRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'privacy';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/classes/privacy/provider.php';
         if (!is_file($file)) {
@@ -59,6 +73,12 @@ final class PrivacyRule implements RuleInterface {
         return $checks;
     }
 
+    /**
+     * Method decodeLiteral.
+     *
+     * @param string $literal Parameter literal.
+     * @return string Return value.
+     */
     private function decodeLiteral(string $literal): string {
         $quote = $literal[0] ?? '';
         $value = substr($literal, 1, -1);

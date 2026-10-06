@@ -8,17 +8,41 @@ use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\PhpSourceInspector;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class ExternalApiRule.
+ */
 final class ExternalApiRule implements RuleInterface {
+    /**
+     * Property inspector.
+     *
+     * @var PhpSourceInspector
+     */
     private PhpSourceInspector $inspector;
 
+    /**
+     * Method __construct.
+     *
+     * @param ?PhpSourceInspector $inspector Parameter inspector.
+     */
     public function __construct(?PhpSourceInspector $inspector = null) {
         $this->inspector = $inspector ?? new PhpSourceInspector();
     }
 
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'external_api';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/db/services.php';
         if (!is_file($file)) {
@@ -82,6 +106,15 @@ final class ExternalApiRule implements RuleInterface {
         return $checks;
     }
 
+    /**
+     * Method error.
+     *
+     * @param string $file Parameter file.
+     * @param int $line Parameter line.
+     * @param string $key Parameter key.
+     * @param string $message Parameter message.
+     * @return Check Return value.
+     */
     private function error(string $file, int $line, string $key, string $message): Check {
         return new Check(false, $this->name(), $file, max(1, $line), $key, $message);
     }

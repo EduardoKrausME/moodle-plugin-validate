@@ -8,11 +8,25 @@ use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\PhpSourceInspector;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class ModSupportsRule.
+ */
 final class ModSupportsRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'mod_supports';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         if (!str_starts_with($context->component, 'mod_')) {
             return [];
@@ -129,6 +143,12 @@ final class ModSupportsRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method normalise.
+     *
+     * @param string $expression Parameter expression.
+     * @return string Return value.
+     */
     private function normalise(string $expression): string {
         $expression = trim($expression, " \t\n\r;");
         while (strlen($expression) >= 2 && $expression[0] === '(' && $expression[strlen($expression) - 1] === ')') {
@@ -137,10 +157,28 @@ final class ModSupportsRule implements RuleInterface {
         return $expression;
     }
 
+    /**
+     * Method ok.
+     *
+     * @param string $file Parameter file.
+     * @param int $line Parameter line.
+     * @param string $key Parameter key.
+     * @param string $message Parameter message.
+     * @return Check Return value.
+     */
     private function ok(string $file, int $line, string $key, string $message): Check {
         return new Check(true, $this->name(), $file, max(1, $line), $key, $message);
     }
 
+    /**
+     * Method error.
+     *
+     * @param string $file Parameter file.
+     * @param int $line Parameter line.
+     * @param string $key Parameter key.
+     * @param string $message Parameter message.
+     * @return Check Return value.
+     */
     private function error(string $file, int $line, string $key, string $message): Check {
         return new Check(false, $this->name(), $file, max(1, $line), $key, $message);
     }

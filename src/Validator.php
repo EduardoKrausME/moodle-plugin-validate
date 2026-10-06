@@ -29,6 +29,9 @@ use EduardoKraus\MoodleStringValidate\Rule\TranslationPlaceholderRule;
 use EduardoKraus\MoodleStringValidate\Rule\VersionRule;
 use RuntimeException;
 
+/**
+ * Class Validator.
+ */
 final class Validator {
     /** @var RuleInterface[] */
     private array $rules;

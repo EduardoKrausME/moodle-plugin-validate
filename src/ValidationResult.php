@@ -27,6 +27,11 @@ final class ValidationResult implements JsonSerializable {
         return $this->checks;
     }
 
+    /**
+     * Method isSuccessful.
+     *
+     * @return bool Return value.
+     */
     public function isSuccessful(): bool {
         foreach ($this->checks as $check) {
             if ($check->isError()) {
@@ -137,10 +142,21 @@ final class ValidationResult implements JsonSerializable {
         ];
     }
 
+    /**
+     * Method jsonSerialize.
+     *
+     * @return array Return value.
+     */
     public function jsonSerialize(): array {
         return $this->toArray();
     }
 
+    /**
+     * Method normaliseRule.
+     *
+     * @param Check $check Parameter check.
+     * @return string Return value.
+     */
     private function normaliseRule(Check $check): string {
         if ($check->rule !== '') {
             return $check->rule;
@@ -153,6 +169,12 @@ final class ValidationResult implements JsonSerializable {
         return 'general';
     }
 
+    /**
+     * Method statusFor.
+     *
+     * @param Check $check Parameter check.
+     * @return string Return value.
+     */
     private function statusFor(Check $check): string {
         if ($check->isError()) {
             return 'error';

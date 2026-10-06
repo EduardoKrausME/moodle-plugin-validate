@@ -11,13 +11,27 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * Class JavascriptHtmlRule.
+ */
 final class JavascriptHtmlRule implements RuleInterface {
     private const MIN_HTML_LENGTH = 200;
 
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'javascript';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $warnings = [];
 
@@ -85,6 +99,14 @@ final class JavascriptHtmlRule implements RuleInterface {
         return $files;
     }
 
+    /**
+     * Method findClosingQuote.
+     *
+     * @param string $contents Parameter contents.
+     * @param int $start Parameter start.
+     * @param string $quote Parameter quote.
+     * @return ?int Return value.
+     */
     private function findClosingQuote(string $contents, int $start, string $quote): ?int {
         $length = strlen($contents);
         $escaped = false;
@@ -105,10 +127,23 @@ final class JavascriptHtmlRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method looksLikeHtml.
+     *
+     * @param string $value Parameter value.
+     * @return bool Return value.
+     */
     private function looksLikeHtml(string $value): bool {
         return preg_match('/<\/?[a-z][^>]*>/i', $value) === 1;
     }
 
+    /**
+     * Method lineFromOffset.
+     *
+     * @param string $contents Parameter contents.
+     * @param int $offset Parameter offset.
+     * @return int Return value.
+     */
     private function lineFromOffset(string $contents, int $offset): int {
         return substr_count(substr($contents, 0, $offset), "\n") + 1;
     }

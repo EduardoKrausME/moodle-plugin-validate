@@ -4,7 +4,20 @@ declare(strict_types=1);
 
 namespace EduardoKraus\MoodleStringValidate;
 
+/**
+ * Class ValidationContext.
+ */
 final class ValidationContext {
+    /**
+     * Method __construct.
+     *
+     * @param string $pluginroot Parameter pluginroot.
+     * @param string $component Parameter component.
+     * @param string $language Parameter language.
+     * @param LanguageCatalog $catalog Parameter catalog.
+     * @param PhpArrayKeyExtractor $extractor Parameter extractor.
+     * @param bool $checkempty Parameter checkempty.
+     */
     public function __construct(
         public readonly string $pluginroot,
         public readonly string $component,
@@ -15,6 +28,12 @@ final class ValidationContext {
     ) {
     }
 
+    /**
+     * Method relative.
+     *
+     * @param string $file Parameter file.
+     * @return string Return value.
+     */
     public function relative(string $file): string {
         $root = rtrim(str_replace('\\', '/', realpath($this->pluginroot) ?: $this->pluginroot), '/');
         $path = str_replace('\\', '/', realpath($file) ?: $file);
@@ -24,6 +43,16 @@ final class ValidationContext {
         return $path;
     }
 
+    /**
+     * Method checkRequiredString.
+     *
+     * @param string $rule Parameter rule.
+     * @param string $key Parameter key.
+     * @param string $sourcefile Parameter sourcefile.
+     * @param int $sourceline Parameter sourceline.
+     * @param string $reason Parameter reason.
+     * @return Check Return value.
+     */
     public function checkRequiredString(
         string $rule,
         string $key,
@@ -69,6 +98,16 @@ final class ValidationContext {
         );
     }
 
+    /**
+     * Method issueForRequiredString.
+     *
+     * @param string $rule Parameter rule.
+     * @param string $key Parameter key.
+     * @param string $sourcefile Parameter sourcefile.
+     * @param int $sourceline Parameter sourceline.
+     * @param string $reason Parameter reason.
+     * @return ?Issue Return value.
+     */
     public function issueForRequiredString(
         string $rule,
         string $key,

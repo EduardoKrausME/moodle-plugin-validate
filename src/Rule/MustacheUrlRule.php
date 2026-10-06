@@ -11,7 +11,15 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * Class MustacheUrlRule.
+ */
 final class MustacheUrlRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'mustacheurl';
     }
@@ -81,6 +89,13 @@ final class MustacheUrlRule implements RuleInterface {
         return $files;
     }
 
+    /**
+     * Method lineFromOffset.
+     *
+     * @param string $contents Parameter contents.
+     * @param int $offset Parameter offset.
+     * @return int Return value.
+     */
     private function lineFromOffset(string $contents, int $offset): int {
         return substr_count(substr($contents, 0, $offset), "\n") + 1;
     }

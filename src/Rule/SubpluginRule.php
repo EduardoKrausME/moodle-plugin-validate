@@ -13,11 +13,25 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use stdClass;
 
+/**
+ * Class SubpluginRule.
+ */
 final class SubpluginRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'subplugin';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/db/subplugins.json';
         if (!is_file($file)) {
@@ -328,6 +342,13 @@ final class SubpluginRule implements RuleInterface {
         return $checks;
     }
 
+    /**
+     * Method validatePlugininfoClass.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @param string $type Parameter type.
+     * @return Check Return value.
+     */
     private function validatePlugininfoClass(ValidationContext $context, string $type): Check {
         $relativefile = 'classes/plugininfo/' . $type . '.php';
         $file = $context->pluginroot . '/' . $relativefile;
@@ -367,6 +388,14 @@ final class SubpluginRule implements RuleInterface {
         );
     }
 
+    /**
+     * Method declaresClass.
+     *
+     * @param string $source Parameter source.
+     * @param string $expectednamespace Parameter expectednamespace.
+     * @param string $expectedclass Parameter expectedclass.
+     * @return bool Return value.
+     */
     private function declaresClass(string $source, string $expectednamespace, string $expectedclass): bool {
         $tokens = token_get_all($source);
         $namespace = '';
@@ -462,10 +491,22 @@ final class SubpluginRule implements RuleInterface {
         return $paths;
     }
 
+    /**
+     * Method validType.
+     *
+     * @param string $type Parameter type.
+     * @return bool Return value.
+     */
     private function validType(string $type): bool {
         return (bool) preg_match('/^[a-z][a-z0-9_]*$/', $type);
     }
 
+    /**
+     * Method validPath.
+     *
+     * @param string $path Parameter path.
+     * @return bool Return value.
+     */
     private function validPath(string $path): bool {
         if ($path === '' || $path[0] === '/' || str_ends_with($path, '/') || str_contains($path, '\\')) {
             return false;
@@ -478,6 +519,12 @@ final class SubpluginRule implements RuleInterface {
         return true;
     }
 
+    /**
+     * Method parentMoodlePath.
+     *
+     * @param string $component Parameter component.
+     * @return ?string Return value.
+     */
     private function parentMoodlePath(string $component): ?string {
         $parts = explode('_', $component, 2);
         if (count($parts) !== 2) {
@@ -518,6 +565,13 @@ final class SubpluginRule implements RuleInterface {
         return array_values(array_unique($found));
     }
 
+    /**
+     * Method findJsonKeyLine.
+     *
+     * @param string $contents Parameter contents.
+     * @param string $key Parameter key.
+     * @return int Return value.
+     */
     private function findJsonKeyLine(string $contents, string $key): int {
         $lines = preg_split('/\R/', $contents) ?: [];
         foreach ($lines as $index => $line) {

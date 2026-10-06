@@ -11,11 +11,25 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * Class GetStringRule.
+ */
 final class GetStringRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'get_string';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $checks = [];
         $found = 0;
@@ -78,6 +92,12 @@ final class GetStringRule implements RuleInterface {
         return $files;
     }
 
+    /**
+     * Method shouldSkip.
+     *
+     * @param string $relative Parameter relative.
+     * @return bool Return value.
+     */
     private function shouldSkip(string $relative): bool {
         $relative = str_replace('\\', '/', $relative);
         return str_starts_with($relative, 'vendor/')
@@ -143,10 +163,22 @@ final class GetStringRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method isLiteral.
+     *
+     * @param array|string $token Parameter token.
+     * @return bool Return value.
+     */
     private function isLiteral(array|string $token): bool {
         return is_array($token) && $token[0] === T_CONSTANT_ENCAPSED_STRING;
     }
 
+    /**
+     * Method decodeLiteral.
+     *
+     * @param string $literal Parameter literal.
+     * @return string Return value.
+     */
     private function decodeLiteral(string $literal): string {
         $quote = $literal[0] ?? '';
         $value = substr($literal, 1, -1);

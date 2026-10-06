@@ -6,30 +6,66 @@ namespace EduardoKraus\MoodleStringValidate;
 
 use RuntimeException;
 
+/**
+ * Class LanguageCatalog.
+ */
 final class LanguageCatalog {
     /** @var array<string, array{empty: bool, line: int}> */
     private array $strings = [];
 
+    /**
+     * Method __construct.
+     *
+     * @param string $file Parameter file.
+     */
     public function __construct(private readonly string $file) {
         $this->parse();
     }
 
+    /**
+     * Method file.
+     *
+     * @return string Return value.
+     */
     public function file(): string {
         return $this->file;
     }
 
+    /**
+     * Method has.
+     *
+     * @param string $key Parameter key.
+     * @return bool Return value.
+     */
     public function has(string $key): bool {
         return isset($this->strings[$key]);
     }
 
+    /**
+     * Method isEmpty.
+     *
+     * @param string $key Parameter key.
+     * @return bool Return value.
+     */
     public function isEmpty(string $key): bool {
         return $this->strings[$key]['empty'] ?? false;
     }
 
+    /**
+     * Method line.
+     *
+     * @param string $key Parameter key.
+     * @return int Return value.
+     */
     public function line(string $key): int {
         return $this->strings[$key]['line'] ?? 1;
     }
 
+    /**
+     * Method parse.
+     *
+     * @return void Return value.
+     */
     private function parse(): void {
         $contents = file_get_contents($this->file);
         if ($contents === false) {
@@ -91,10 +127,24 @@ final class LanguageCatalog {
         return null;
     }
 
+    /**
+     * Method isToken.
+     *
+     * @param array|string $token Parameter token.
+     * @param int $type Parameter type.
+     * @param string $value Parameter value.
+     * @return bool Return value.
+     */
     private function isToken(array|string $token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }
 
+    /**
+     * Method decodeLiteral.
+     *
+     * @param string $literal Parameter literal.
+     * @return string Return value.
+     */
     private function decodeLiteral(string $literal): string {
         $quote = $literal[0] ?? '';
         $value = substr($literal, 1, -1);

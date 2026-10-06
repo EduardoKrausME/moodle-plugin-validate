@@ -11,11 +11,25 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * Class LegacyAjaxRule.
+ */
 final class LegacyAjaxRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'ajax';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $warnings = [];
 
@@ -81,10 +95,22 @@ final class LegacyAjaxRule implements RuleInterface {
         return $files;
     }
 
+    /**
+     * Method skip.
+     *
+     * @param string $relative Parameter relative.
+     * @return bool Return value.
+     */
     private function skip(string $relative): bool {
         return str_starts_with($relative, 'vendor/') || str_starts_with($relative, '.git/');
     }
 
+    /**
+     * Method skipJs.
+     *
+     * @param string $relative Parameter relative.
+     * @return bool Return value.
+     */
     private function skipJs(string $relative): bool {
         return $this->skip($relative)
             || str_contains($relative, '/amd/build/')
@@ -92,6 +118,13 @@ final class LegacyAjaxRule implements RuleInterface {
             || str_ends_with($relative, '.min.js');
     }
 
+    /**
+     * Method lineFromOffset.
+     *
+     * @param string $contents Parameter contents.
+     * @param int $offset Parameter offset.
+     * @return int Return value.
+     */
     private function lineFromOffset(string $contents, int $offset): int {
         return substr_count(substr($contents, 0, $offset), "\n") + 1;
     }

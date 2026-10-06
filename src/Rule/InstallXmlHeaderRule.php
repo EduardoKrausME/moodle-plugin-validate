@@ -7,6 +7,9 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class InstallXmlHeaderRule.
+ */
 final class InstallXmlHeaderRule implements RuleInterface {
     private const XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
 
@@ -86,6 +89,11 @@ final class InstallXmlHeaderRule implements RuleInterface {
         "factor" => "admin/tool/mfa/factor",
     ];
 
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return "installxml";
     }
@@ -176,6 +184,14 @@ final class InstallXmlHeaderRule implements RuleInterface {
         return $checks;
     }
 
+    /**
+     * Method validatePath.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @param string $path Parameter path.
+     * @param int $line Parameter line.
+     * @return Check Return value.
+     */
     private function validatePath(ValidationContext $context, string $path, int $line): Check {
         if (str_starts_with($path, "/") || str_ends_with($path, "/") || str_contains($path, "\\")
             || str_contains($path, "//") || preg_match('#(?:^|/)\.\.?(/|$)#', $path) === 1) {
@@ -208,6 +224,12 @@ final class InstallXmlHeaderRule implements RuleInterface {
         );
     }
 
+    /**
+     * Method expectedPath.
+     *
+     * @param string $component Parameter component.
+     * @return ?string Return value.
+     */
     private function expectedPath(string $component): ?string {
         $separator = strpos($component, "_");
         if ($separator === false || $separator === 0 || $separator === strlen($component) - 1) {
@@ -224,6 +246,12 @@ final class InstallXmlHeaderRule implements RuleInterface {
         return $root . "/" . $name . "/db";
     }
 
+    /**
+     * Method schemaLocationForPath.
+     *
+     * @param string $path Parameter path.
+     * @return string Return value.
+     */
     private function schemaLocationForPath(string $path): string {
         $segments = array_values(array_filter(explode("/", trim($path, "/")), static fn(string $segment): bool => $segment !== ""));
         return str_repeat("../", count($segments)) . "lib/xmldb/xmldb.xsd";
@@ -252,6 +280,12 @@ final class InstallXmlHeaderRule implements RuleInterface {
         return $attributes;
     }
 
+    /**
+     * Method isValidVersion.
+     *
+     * @param string $version Parameter version.
+     * @return bool Return value.
+     */
     private function isValidVersion(string $version): bool {
         if (preg_match('/^(\d{4})(\d{2})(\d{2})$/', $version, $match) !== 1) {
             return false;
@@ -259,10 +293,26 @@ final class InstallXmlHeaderRule implements RuleInterface {
         return checkdate((int)$match[2], (int)$match[3], (int)$match[1]);
     }
 
+    /**
+     * Method error.
+     *
+     * @param int $line Parameter line.
+     * @param string $key Parameter key.
+     * @param string $message Parameter message.
+     * @return Check Return value.
+     */
     private function error(int $line, string $key, string $message): Check {
         return new Check(false, $this->name(), "db/install.xml", max(1, $line), $key, $message);
     }
 
+    /**
+     * Method ok.
+     *
+     * @param int $line Parameter line.
+     * @param string $key Parameter key.
+     * @param string $message Parameter message.
+     * @return Check Return value.
+     */
     private function ok(int $line, string $key, string $message): Check {
         return new Check(true, $this->name(), "db/install.xml", max(1, $line), $key, $message);
     }

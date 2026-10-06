@@ -7,11 +7,25 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class RepositoryFilesRule.
+ */
 final class RepositoryFilesRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'repository';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $checks = [
             $this->checkOneOf(
@@ -40,6 +54,15 @@ final class RepositoryFilesRule implements RuleInterface {
         return $checks;
     }
 
+    /**
+     * Method checkOneOf.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @param array $filenames Parameter filenames.
+     * @param string $label Parameter label.
+     * @param string $missingmessage Parameter missingmessage.
+     * @return Check Return value.
+     */
     private function checkOneOf(
         ValidationContext $context,
         array $filenames,
@@ -63,6 +86,15 @@ final class RepositoryFilesRule implements RuleInterface {
         return new Check(false, $this->name(), $filenames[0], 1, '', $missingmessage);
     }
 
+    /**
+     * Method checkRequiredFile.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @param string $filename Parameter filename.
+     * @param string $successmessage Parameter successmessage.
+     * @param string $missingmessage Parameter missingmessage.
+     * @return Check Return value.
+     */
     private function checkRequiredFile(
         ValidationContext $context,
         string $filename,

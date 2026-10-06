@@ -4,7 +4,18 @@ declare(strict_types=1);
 
 namespace EduardoKraus\MoodleStringValidate;
 
+/**
+ * Class PhpSourceInspector.
+ */
 final class PhpSourceInspector {
+    /**
+     * Method resolveClassFile.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @param string $classname Parameter classname.
+     * @param ?string $classpath Parameter classpath.
+     * @return ?string Return value.
+     */
     public function resolveClassFile(ValidationContext $context, string $classname, ?string $classpath = null): ?string {
         if ($classpath !== null && $classpath !== '') {
             $path = $this->resolveFileReference($context, $classpath);
@@ -27,6 +38,13 @@ final class PhpSourceInspector {
         return $context->pluginroot . '/classes/' . str_replace('\\', '/', $relative) . '.php';
     }
 
+    /**
+     * Method resolveImportedClass.
+     *
+     * @param string $file Parameter file.
+     * @param string $classname Parameter classname.
+     * @return string Return value.
+     */
     public function resolveImportedClass(string $file, string $classname): string {
         $classname = ltrim($classname, '\\');
         if ($classname === '' || !is_file($file)) {
@@ -68,6 +86,13 @@ final class PhpSourceInspector {
         return $classname;
     }
 
+    /**
+     * Method resolveFileReference.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @param string $reference Parameter reference.
+     * @return ?string Return value.
+     */
     public function resolveFileReference(ValidationContext $context, string $reference): ?string {
         $reference = trim(str_replace('\\', '/', $reference));
         if ($reference === '' || str_contains($reference, '..')) {
@@ -166,6 +191,13 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method functionExists.
+     *
+     * @param string $file Parameter file.
+     * @param string $functionname Parameter functionname.
+     * @return bool Return value.
+     */
     public function functionExists(string $file, string $functionname): bool {
         return $this->functionInfo($file, $functionname) !== null;
     }
@@ -199,6 +231,13 @@ final class PhpSourceInspector {
         return [];
     }
 
+    /**
+     * Method arraySource.
+     *
+     * @param string $file Parameter file.
+     * @param string $variablename Parameter variablename.
+     * @return ?string Return value.
+     */
     public function arraySource(string $file, string $variablename): ?string {
         $source = file_get_contents($file);
         if ($source === false) {
@@ -229,6 +268,13 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method literalValue.
+     *
+     * @param string $code Parameter code.
+     * @param string $key Parameter key.
+     * @return ?string Return value.
+     */
     public function literalValue(string $code, string $key): ?string {
         $key = preg_quote($key, '/');
         if (preg_match('/[\'\"]' . $key . '[\'\"]\s*=>\s*([\'\"])((?:\\\\.|(?!\1).)*)\1/sU', $code, $match) === 1) {
@@ -268,6 +314,13 @@ final class PhpSourceInspector {
         return $map;
     }
 
+    /**
+     * Method decodePhpStringLiteral.
+     *
+     * @param string $value Parameter value.
+     * @param string $quote Parameter quote.
+     * @return string Return value.
+     */
     private function decodePhpStringLiteral(string $value, string $quote): string {
         if ($quote === "'") {
             return str_replace(["\\\\", "\\'"], ["\\", "'"], $value);
@@ -275,6 +328,13 @@ final class PhpSourceInspector {
         return stripcslashes($value);
     }
 
+    /**
+     * Method readNamespace.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @return string Return value.
+     */
     private function readNamespace(array $tokens, int $start): string {
         $name = '';
         for ($i = $start, $count = count($tokens); $i < $count; $i++) {
@@ -289,6 +349,14 @@ final class PhpSourceInspector {
         return trim($name, '\\');
     }
 
+    /**
+     * Method readExtends.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @param int $end Parameter end.
+     * @return string Return value.
+     */
     private function readExtends(array $tokens, int $start, int $end): string {
         for ($i = $start; $i < $end; $i++) {
             if (!is_array($tokens[$i]) || $tokens[$i][0] !== T_EXTENDS) {
@@ -408,6 +476,13 @@ final class PhpSourceInspector {
         return $entries;
     }
 
+    /**
+     * Method arrayOpeningIndex.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @return ?int Return value.
+     */
     private function arrayOpeningIndex(array $tokens, int $start): ?int {
         if ($tokens[$start] === '[') {
             return $start;
@@ -419,6 +494,13 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method isAnonymousClass.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $index Parameter index.
+     * @return bool Return value.
+     */
     private function isAnonymousClass(array $tokens, int $index): bool {
         for ($i = $index - 1; $i >= 0; $i--) {
             if (is_array($tokens[$i]) && in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
@@ -429,6 +511,13 @@ final class PhpSourceInspector {
         return false;
     }
 
+    /**
+     * Method findOpeningBrace.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @return ?int Return value.
+     */
     private function findOpeningBrace(array $tokens, int $start): ?int {
         for ($i = $start, $count = count($tokens); $i < $count; $i++) {
             if ($tokens[$i] === '{') {
@@ -441,6 +530,15 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method matchingToken.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @param string $open Parameter open.
+     * @param string $close Parameter close.
+     * @return ?int Return value.
+     */
     private function matchingToken(array $tokens, int $start, string $open, string $close): ?int {
         $depth = 0;
         for ($i = $start, $count = count($tokens); $i < $count; $i++) {
@@ -455,11 +553,24 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method isCurlyInterpolationOpen.
+     *
+     * @param array|string $token Parameter token.
+     * @return bool Return value.
+     */
     private function isCurlyInterpolationOpen(array|string $token): bool {
         return is_array($token)
             && in_array($token[0], [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true);
     }
 
+    /**
+     * Method nextSignificant.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @return ?int Return value.
+     */
     private function nextSignificant(array $tokens, int $start): ?int {
         for ($i = $start, $count = count($tokens); $i < $count; $i++) {
             if (!is_array($tokens[$i]) || !in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
@@ -469,6 +580,14 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method nextTokenOfType.
+     *
+     * @param array $tokens Parameter tokens.
+     * @param int $start Parameter start.
+     * @param int $type Parameter type.
+     * @return ?int Return value.
+     */
     private function nextTokenOfType(array $tokens, int $start, int $type): ?int {
         for ($i = $start, $count = count($tokens); $i < $count; $i++) {
             if (is_array($tokens[$i]) && $tokens[$i][0] === $type) {
@@ -481,6 +600,12 @@ final class PhpSourceInspector {
         return null;
     }
 
+    /**
+     * Method tokensToString.
+     *
+     * @param array $tokens Parameter tokens.
+     * @return string Return value.
+     */
     private function tokensToString(array $tokens): string {
         $code = '';
         foreach ($tokens as $token) {
@@ -489,6 +614,14 @@ final class PhpSourceInspector {
         return $code;
     }
 
+    /**
+     * Method isToken.
+     *
+     * @param array|string $token Parameter token.
+     * @param int $type Parameter type.
+     * @param string $value Parameter value.
+     * @return bool Return value.
+     */
     private function isToken(array|string $token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }

@@ -6,6 +6,9 @@ namespace EduardoKraus\MoodleStringValidate;
 
 use RuntimeException;
 
+/**
+ * Class PhpArrayKeyExtractor.
+ */
 final class PhpArrayKeyExtractor {
     /**
      * Extracts top-level string keys from an array assigned to a PHP variable.
@@ -108,14 +111,35 @@ final class PhpArrayKeyExtractor {
         return null;
     }
 
+    /**
+     * Method isToken.
+     *
+     * @param array|string $token Parameter token.
+     * @param int $type Parameter type.
+     * @param string $value Parameter value.
+     * @return bool Return value.
+     */
     private function isToken(array|string $token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }
 
+    /**
+     * Method isTokenType.
+     *
+     * @param array|string $token Parameter token.
+     * @param int $type Parameter type.
+     * @return bool Return value.
+     */
     private function isTokenType(array|string $token, int $type): bool {
         return is_array($token) && $token[0] === $type;
     }
 
+    /**
+     * Method decodeLiteral.
+     *
+     * @param string $literal Parameter literal.
+     * @return string Return value.
+     */
     private function decodeLiteral(string $literal): string {
         $quote = $literal[0] ?? '';
         $value = substr($literal, 1, -1);

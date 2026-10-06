@@ -6,11 +6,25 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class MessageProviderRule.
+ */
 final class MessageProviderRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'messageprovider';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/db/messages.php';
         if (!is_file($file)) {

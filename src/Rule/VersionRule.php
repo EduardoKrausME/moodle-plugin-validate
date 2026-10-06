@@ -8,11 +8,25 @@ use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\PhpPluginMetadata;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class VersionRule.
+ */
 final class VersionRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'version';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/version.php';
         if (!is_file($file)) {

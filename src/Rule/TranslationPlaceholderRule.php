@@ -8,11 +8,25 @@ use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 use RuntimeException;
 
+/**
+ * Class TranslationPlaceholderRule.
+ */
 final class TranslationPlaceholderRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'translationplaceholder';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $langroot = $context->pluginroot . '/lang';
         if (!is_dir($langroot)) {
@@ -222,10 +236,24 @@ final class TranslationPlaceholderRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method isToken.
+     *
+     * @param array|string $token Parameter token.
+     * @param int $type Parameter type.
+     * @param string $value Parameter value.
+     * @return bool Return value.
+     */
     private function isToken(array|string $token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }
 
+    /**
+     * Method decodeLiteral.
+     *
+     * @param string $literal Parameter literal.
+     * @return string Return value.
+     */
     private function decodeLiteral(string $literal): string {
         $quote = $literal[0] ?? '';
         $value = substr($literal, 1, -1);

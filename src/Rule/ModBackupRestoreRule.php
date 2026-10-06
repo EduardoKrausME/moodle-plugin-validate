@@ -7,11 +7,25 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class ModBackupRestoreRule.
+ */
 final class ModBackupRestoreRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return "mod_backup_restore";
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         if (!str_starts_with($context->component, "mod_")) {
             return [];
@@ -356,6 +370,13 @@ final class ModBackupRestoreRule implements RuleInterface {
         return array_values(array_unique($classes));
     }
 
+    /**
+     * Method classExtends.
+     *
+     * @param string $classcode Parameter classcode.
+     * @param string $parentclass Parameter parentclass.
+     * @return bool Return value.
+     */
     private function classExtends(string $classcode, string $parentclass): bool {
         if (preg_match('/\bextends\s+([\\\\A-Za-z_][\\\\A-Za-z0-9_]*)/i', $classcode, $match) !== 1) {
             return false;
@@ -363,6 +384,12 @@ final class ModBackupRestoreRule implements RuleInterface {
         return $this->classBasename($match[1]) === $parentclass;
     }
 
+    /**
+     * Method classBasename.
+     *
+     * @param string $classname Parameter classname.
+     * @return string Return value.
+     */
     private function classBasename(string $classname): string {
         $classname = ltrim($classname, "\\");
         $parts = explode("\\", $classname);
@@ -416,6 +443,12 @@ final class ModBackupRestoreRule implements RuleInterface {
         return $results;
     }
 
+    /**
+     * Method stripOuterParentheses.
+     *
+     * @param string $expression Parameter expression.
+     * @return string Return value.
+     */
     private function stripOuterParentheses(string $expression): string {
         while (strlen($expression) >= 2 && $expression[0] === "(" && $expression[strlen($expression) - 1] === ")") {
             $expression = trim(substr($expression, 1, -1));

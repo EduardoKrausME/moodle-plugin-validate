@@ -6,7 +6,16 @@ namespace EduardoKraus\MoodleStringValidate;
 
 use RuntimeException;
 
+/**
+ * Class ComponentResolver.
+ */
 final class ComponentResolver {
+    /**
+     * Method resolve.
+     *
+     * @param string $pluginroot Parameter pluginroot.
+     * @return string Return value.
+     */
     public function resolve(string $pluginroot): string {
         $versionfile = $pluginroot . '/version.php';
         if (is_file($versionfile)) {

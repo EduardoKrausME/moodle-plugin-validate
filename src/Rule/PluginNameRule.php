@@ -6,11 +6,25 @@ namespace EduardoKraus\MoodleStringValidate\Rule;
 
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
+/**
+ * Class PluginNameRule.
+ */
 final class PluginNameRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'pluginname';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $source = is_file($context->pluginroot . '/version.php')
             ? $context->pluginroot . '/version.php'

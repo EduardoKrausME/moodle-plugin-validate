@@ -12,6 +12,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * Class AmdModulesRule.
+ */
 final class AmdModulesRule implements RuleInterface {
     private const IGNORED_DIRECTORIES = [
         '.git',
@@ -21,10 +24,21 @@ final class AmdModulesRule implements RuleInterface {
         'third_party',
     ];
 
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'amd';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $checks = [];
         $sourceModules = $this->sourceModules($context->pluginroot);
@@ -263,6 +277,12 @@ final class AmdModulesRule implements RuleInterface {
         return $references;
     }
 
+    /**
+     * Method stripPhpComments.
+     *
+     * @param string $contents Parameter contents.
+     * @return string Return value.
+     */
     private function stripPhpComments(string $contents): string {
         $result = '';
         foreach (token_get_all($contents) as $token) {
@@ -279,6 +299,13 @@ final class AmdModulesRule implements RuleInterface {
         return $result;
     }
 
+    /**
+     * Method lineFromOffset.
+     *
+     * @param string $contents Parameter contents.
+     * @param int $offset Parameter offset.
+     * @return int Return value.
+     */
     private function lineFromOffset(string $contents, int $offset): int {
         return substr_count(substr($contents, 0, $offset), "\n") + 1;
     }

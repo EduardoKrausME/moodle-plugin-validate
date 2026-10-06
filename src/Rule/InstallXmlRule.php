@@ -8,6 +8,9 @@ use EduardoKraus\MoodleStringValidate\Check;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 use stdClass;
 
+/**
+ * Class InstallXmlRule.
+ */
 final class InstallXmlRule implements RuleInterface {
     private const TABLE_NAME_MAX_LENGTH = 53;
     private const FIELD_NAME_MAX_LENGTH = 63;
@@ -24,10 +27,21 @@ final class InstallXmlRule implements RuleInterface {
         ],
     ];
 
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'installxml';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $file = $context->pluginroot . '/db/install.xml';
         if (!is_file($file)) {
@@ -156,6 +170,13 @@ final class InstallXmlRule implements RuleInterface {
         }
     }
 
+    /**
+     * Method isLegacyTablePrefixException.
+     *
+     * @param string $component Parameter component.
+     * @param string $tablename Parameter tablename.
+     * @return bool Return value.
+     */
     private function isLegacyTablePrefixException(string $component, string $tablename): bool {
         return in_array(
             $tablename,
@@ -465,6 +486,13 @@ final class InstallXmlRule implements RuleInterface {
         ));
     }
 
+    /**
+     * Method attribute.
+     *
+     * @param stdClass $element Parameter element.
+     * @param string $name Parameter name.
+     * @return ?string Return value.
+     */
     private function attribute(stdClass $element, string $name): ?string {
         return array_key_exists($name, $element->attributes) ? $element->attributes[$name] : null;
     }
@@ -487,6 +515,14 @@ final class InstallXmlRule implements RuleInterface {
         return false;
     }
 
+    /**
+     * Method error.
+     *
+     * @param string $file Parameter file.
+     * @param int $line Parameter line.
+     * @param string $message Parameter message.
+     * @return Check Return value.
+     */
     private function error(string $file, int $line, string $message): Check {
         return new Check(false, $this->name(), $file, max(1, $line), '', $message);
     }
@@ -654,6 +690,13 @@ final class InstallXmlRule implements RuleInterface {
         return [$attributes, null];
     }
 
+    /**
+     * Method findTagEnd.
+     *
+     * @param string $xml Parameter xml.
+     * @param int $offset Parameter offset.
+     * @return ?int Return value.
+     */
     private function findTagEnd(string $xml, int $offset): ?int {
         $quote = null;
         for ($index = $offset, $length = strlen($xml); $index < $length; $index++) {
@@ -671,6 +714,13 @@ final class InstallXmlRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method lineAt.
+     *
+     * @param string $xml Parameter xml.
+     * @param int $offset Parameter offset.
+     * @return int Return value.
+     */
     private function lineAt(string $xml, int $offset): int {
         return substr_count($xml, "\n", 0, max(0, $offset)) + 1;
     }

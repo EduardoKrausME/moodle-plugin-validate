@@ -11,11 +11,25 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * Class MoodleExceptionRule.
+ */
 final class MoodleExceptionRule implements RuleInterface {
+    /**
+     * Method name.
+     *
+     * @return string Return value.
+     */
     public function name(): string {
         return 'moodle_exception';
     }
 
+    /**
+     * Method validate.
+     *
+     * @param ValidationContext $context Parameter context.
+     * @return array Return value.
+     */
     public function validate(ValidationContext $context): array {
         $checks = [];
         $found = 0;
@@ -78,6 +92,12 @@ final class MoodleExceptionRule implements RuleInterface {
         return $files;
     }
 
+    /**
+     * Method shouldSkip.
+     *
+     * @param string $relative Parameter relative.
+     * @return bool Return value.
+     */
     private function shouldSkip(string $relative): bool {
         $relative = str_replace('\\', '/', $relative);
         return str_starts_with($relative, 'vendor/')
@@ -166,6 +186,12 @@ final class MoodleExceptionRule implements RuleInterface {
         return $name === '' ? null : ['name' => $name, 'end' => $end];
     }
 
+    /**
+     * Method isMoodleExceptionClass.
+     *
+     * @param string $classname Parameter classname.
+     * @return bool Return value.
+     */
     private function isMoodleExceptionClass(string $classname): bool {
         $classname = strtolower(ltrim($classname, '\\'));
         return $classname === 'moodle_exception'
@@ -281,10 +307,22 @@ final class MoodleExceptionRule implements RuleInterface {
         return null;
     }
 
+    /**
+     * Method isLiteral.
+     *
+     * @param array|string|null $token Parameter token.
+     * @return bool Return value.
+     */
     private function isLiteral(array|string|null $token): bool {
         return is_array($token) && $token[0] === T_CONSTANT_ENCAPSED_STRING;
     }
 
+    /**
+     * Method decodeLiteral.
+     *
+     * @param string $literal Parameter literal.
+     * @return string Return value.
+     */
     private function decodeLiteral(string $literal): string {
         $quote = $literal[0] ?? '';
         $value = substr($literal, 1, -1);
