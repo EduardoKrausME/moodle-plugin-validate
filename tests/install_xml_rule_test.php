@@ -10,7 +10,7 @@ use EduardoKraus\MoodleStringValidate\PhpArrayKeyExtractor;
 use EduardoKraus\MoodleStringValidate\Rule\InstallXmlRule;
 use EduardoKraus\MoodleStringValidate\ValidationContext;
 
-function installXmlCreateContext(string $component, string $xml): ValidationContext {
+function installXmlCreateContext(string $component, string $xml, array $ignoredChecks = []): ValidationContext {
     $root = sys_get_temp_dir() . '/moodle-installxml-' . bin2hex(random_bytes(6));
     mkdir($root . '/db', 0777, true);
     mkdir($root . '/lang/en', 0777, true);
