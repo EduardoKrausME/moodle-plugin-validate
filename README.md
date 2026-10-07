@@ -269,7 +269,10 @@ The CLI format is now only a presentation layer over this result: GitHub Actions
   uses: EduardoKrausME/moodle-string-validate@main
   with:
     plugin: ./plugin
+    ignore: table-prefix
 ```
+
+The `ignore` input accepts a comma-separated list of granular checks. Currently `table-prefix` disables only the plugin table-prefix requirement in `db/install.xml`; the remaining XMLDB validations still run.
 
 After creating a stable `v1` tag, consumers can use:
 
