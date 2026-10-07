@@ -27,6 +27,7 @@ function installXmlCreateContext(string $component, string $xml, array $ignoredC
         new LanguageCatalog($languagefile),
         new PhpArrayKeyExtractor(),
         true,
+        $ignoredChecks,
     );
 }
 
@@ -84,6 +85,15 @@ $validxml = <<<'XML'
 </XMLDB>
 XML;
 $context = installXmlCreateContext('local_example', $validxml);
+installXmlAssertNoErrors($rule->validate($context));
+installXmlRemoveTree($context->pluginroot);
+
+$wrongprefixxml = str_replace('local_example_data', 'legacy_data', $validxml);
+$context = installXmlCreateContext('local_example', $wrongprefixxml);
+installXmlAssertError($rule->validate($context), "must use plugin table prefix 'local_example'");
+installXmlRemoveTree($context->pluginroot);
+
+$context = installXmlCreateContext('local_example', $wrongprefixxml, ['table-prefix']);
 installXmlAssertNoErrors($rule->validate($context));
 installXmlRemoveTree($context->pluginroot);
 
