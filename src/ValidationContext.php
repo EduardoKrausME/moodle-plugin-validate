@@ -17,6 +17,7 @@ final class ValidationContext {
      * @param LanguageCatalog $catalog Parameter catalog.
      * @param PhpArrayKeyExtractor $extractor Parameter extractor.
      * @param bool $checkempty Parameter checkempty.
+     * @param array<string> $ignoredChecks Validation checks to ignore.
      */
     public function __construct(
         public readonly string $pluginroot,
@@ -25,7 +26,18 @@ final class ValidationContext {
         public readonly LanguageCatalog $catalog,
         public readonly PhpArrayKeyExtractor $extractor,
         public readonly bool $checkempty = true,
+        public readonly array $ignoredChecks = [],
     ) {
+    }
+
+    /**
+     * Checks whether a granular validation has been disabled.
+     *
+     * @param string $check Validation check identifier.
+     * @return bool
+     */
+    public function ignores(string $check): bool {
+        return in_array($check, $this->ignoredChecks, true);
     }
 
     /**
