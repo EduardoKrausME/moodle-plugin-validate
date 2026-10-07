@@ -17,7 +17,7 @@ function usage(): void {
 Moodle Plugin Validate
 
 Usage:
-  moodle-string-validate [plugin-path] [--lang=en] [--format=text|github|json] [--allow-empty]
+  moodle-string-validate [plugin-path] [--lang=en] [--format=text|github|json] [--allow-empty] [--ignore=check[,check...]]
 
 Examples:
   moodle-string-validate .
