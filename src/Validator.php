@@ -64,8 +64,16 @@ final class Validator {
         ];
     }
 
-    /** @return Check[] */
-    public function validateDetailed(string $pluginroot, string $language = 'en', bool $checkempty = true): array {
+    /**
+     * @param array<string> $ignoredChecks Granular validation checks to ignore.
+     * @return Check[]
+     */
+    public function validateDetailed(
+        string $pluginroot,
+        string $language = 'en',
+        bool $checkempty = true,
+        array $ignoredChecks = [],
+    ): array {
         $realroot = realpath($pluginroot);
         if ($realroot === false || !is_dir($realroot)) {
             throw new RuntimeException("Plugin path does not exist: {$pluginroot}");
@@ -92,6 +100,7 @@ final class Validator {
             new LanguageCatalog($languagefile),
             new PhpArrayKeyExtractor(),
             $checkempty,
+            $ignoredChecks,
         );
 
         $checks = [];
@@ -108,6 +117,7 @@ final class Validator {
         string $pluginroot,
         string $language = 'en',
         bool $checkempty = true,
+        array $ignoredChecks = [],
     ): ValidationResult {
         $realroot = realpath($pluginroot);
         if ($realroot === false || !is_dir($realroot)) {
@@ -118,14 +128,22 @@ final class Validator {
 
         return new ValidationResult(
             $component,
-            $this->validateDetailed($realroot, $language, $checkempty),
+            $this->validateDetailed($realroot, $language, $checkempty, $ignoredChecks),
         );
     }
 
-    /** @return Issue[] */
-    public function validate(string $pluginroot, string $language = 'en', bool $checkempty = true): array {
+    /**
+     * @param array<string> $ignoredChecks Granular validation checks to ignore.
+     * @return Issue[]
+     */
+    public function validate(
+        string $pluginroot,
+        string $language = 'en',
+        bool $checkempty = true,
+        array $ignoredChecks = [],
+    ): array {
         $issues = [];
-        foreach ($this->validateDetailed($pluginroot, $language, $checkempty) as $check) {
+        foreach ($this->validateDetailed($pluginroot, $language, $checkempty, $ignoredChecks) as $check) {
             $issue = $check->toIssue();
             if ($issue !== null) {
                 $issues[] = $issue;
