@@ -30,6 +30,9 @@ runs:
         if [ "${{ inputs.allow-empty }}" = "true" ]; then
           args+=("--allow-empty")
         fi
+        if [ -n "${{ inputs.ignore }}" ]; then
+          args+=("--ignore=${{ inputs.ignore }}")
+        fi
         php "${{ github.action_path }}/bin/moodle-string-validate" "${args[@]}"
 
 branding:
