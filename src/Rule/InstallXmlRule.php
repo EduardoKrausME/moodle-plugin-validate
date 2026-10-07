@@ -144,6 +144,7 @@ final class InstallXmlRule implements RuleInterface {
         string $tablename,
         string $expectedprefix,
         string $component,
+        bool $ignoretableprefix,
     ): void {
         if (strlen($tablename) > self::TABLE_NAME_MAX_LENGTH) {
             $checks[] = $this->error(
@@ -162,7 +163,11 @@ final class InstallXmlRule implements RuleInterface {
         $hasexpectedprefix = $tablename === $expectedprefix
             || str_starts_with($tablename, $expectedprefix . '_');
 
-        if (!$hasexpectedprefix && !$this->isLegacyTablePrefixException($component, $tablename)) {
+        if (
+            !$ignoretableprefix
+            && !$hasexpectedprefix
+            && !$this->isLegacyTablePrefixException($component, $tablename)
+        ) {
             $checks[] = $this->error(
                 $relative,
                 $table->line,
