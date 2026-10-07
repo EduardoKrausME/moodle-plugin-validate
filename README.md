@@ -188,6 +188,7 @@ Options:
 ```text
 --lang=en       Language directory to validate. Default: en
 --allow-empty   Do not fail when a required string exists but is empty
+--ignore=...    Comma-separated granular checks to ignore (for example: table-prefix)
 --format=text   Human-readable output. Default
 --format=github GitHub Actions annotations
 --format=json   Structured JSON output for integrations
