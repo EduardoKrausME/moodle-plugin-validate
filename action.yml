@@ -16,7 +16,7 @@ inputs:
     required: false
     default: 'false'
   ignore:
-    description: Comma-separated validation checks to ignore. Example: table-prefix.
+    description: 'Comma-separated validation checks to ignore. Example: table-prefix.'
     required: false
     default: ''
 
