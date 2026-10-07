@@ -90,6 +90,7 @@ final class InstallXmlRule implements RuleInterface {
                 $tablename,
                 $expectedprefix,
                 $context->component,
+                $context->ignores('table-prefix'),
             );
             $this->validateTable($checks, $relative, $table, $tablename);
         }
