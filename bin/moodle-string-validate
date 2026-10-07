@@ -85,6 +85,7 @@ $path = '.';
 $language = 'en';
 $format = 'text';
 $checkempty = true;
+$ignoredchecks = [];
 $pathset = false;
 
 foreach (array_slice($argv, 1) as $argument) {
@@ -102,6 +103,15 @@ foreach (array_slice($argv, 1) as $argument) {
     }
     if (str_starts_with($argument, '--format=')) {
         $format = substr($argument, strlen('--format='));
+        continue;
+    }
+    if (str_starts_with($argument, '--ignore=')) {
+        foreach (explode(',', substr($argument, strlen('--ignore='))) as $check) {
+            $check = trim($check);
+            if ($check !== '') {
+                $ignoredchecks[] = $check;
+            }
+        }
         continue;
     }
     if (str_starts_with($argument, '-')) {
@@ -122,7 +132,7 @@ if (!in_array($format, ['text', 'github', 'json'], true)) {
 }
 
 try {
-    $result = (new Validator())->validateResult($path, $language, $checkempty);
+    $result = (new Validator())->validateResult($path, $language, $checkempty, array_values(array_unique($ignoredchecks)));
     $data = $result->toArray();
 } catch (Throwable $exception) {
     if ($format === 'json') {
