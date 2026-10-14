@@ -470,6 +470,9 @@ removeTree($root);
 
 // Moodle-root classpaths must resolve the deepest plugin-relative file before basename fallbacks.
 $root = createPlugin(['component' => 'mod_example']);
+// Activity modules use lang/en/<modname>.php and require db/upgrade.php.
+rename($root . '/lang/en/mod_example.php', $root . '/lang/en/example.php');
+file_put_contents($root . '/db/upgrade.php', "<?php\n");
 mkdir($root . '/classes/service', 0777, true);
 file_put_contents($root . '/view.php', "<?php\n// Activity entry point, not the external service class.\n");
 file_put_contents($root . '/classes/service/view.php', <<<'PHPFILE'
