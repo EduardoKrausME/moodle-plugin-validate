@@ -4,6 +4,49 @@ These instructions are mandatory whenever ChatGPT/Codex finishes work on a Moodl
 
 The purpose of this directory is to contain deterministic Python post-processing steps that are executed against the finished plugin. The scripts may rewrite source files only when the rewrite is deterministic and safe. Canonical project validators remain authoritative and must all pass before the plugin is considered finished.
 
+## Repository access and restricted-network environments
+
+The finishing pipeline needs a **complete local checkout of this validator repository**, not only a copy of `.chatgpt/`. In particular, `.chatgpt/scripts/validate_all.py` reads `src/Validator.php` and runs `bin/moodle-string-validate` from the validator repository. Python 3 and PHP CLI must be available.
+
+Do not assume that a ChatGPT/Codex execution environment can reach GitHub with `git clone`. The message `Could not resolve host: github.com` indicates a DNS or network restriction in the execution environment, not a defect in the plugin or a validation failure. Changing HTTPS to SSH or repeating the clone does not fix unavailable DNS.
+
+Use this acquisition and validation order:
+
+1. **Reuse a complete local validator checkout** if one is already mounted or cached. Check that `.chatgpt/run.py`, `src/Validator.php` and `bin/moodle-string-validate` exist in that checkout.
+2. If there is no local checkout and the environment allows GitHub access, obtain the full validator repository **once**, outside the Moodle plugin root.
+3. If GitHub DNS/network access is blocked, **do not keep retrying `git clone`**. A connected GitHub integration may be used to inspect and edit GitHub files, but API access alone does not create a local executable checkout. Use an available workspace mount, an existing complete artifact, or another supported transfer mechanism to stage the **entire** validator repository locally before invoking the runner.
+4. If the complete validator cannot be made available locally, do not invent passing results or substitute superficial checks for the full suite. Report **local validation blocked by environment**, including the exact missing prerequisite, and use GitHub Actions as an alternate execution environment when available. A successful remote run may be reported as a CI validation, never as an executed local test.
+5. When a task forbids changing `version.php` or other plugin files, use `--check`; the default runner can normalize files, including `version.php`. Do not execute a mutating normalization mode that conflicts with task-specific restrictions.
+
+Example using an existing local checkout (no network call):
+
+```bash
+python3 /path/to/moodle-plugin-validate/.chatgpt/run.py --check /absolute/path/to/plugin
+```
+
+For repositories that do not have a local validator checkout, a GitHub Actions job can obtain both repositories **inside GitHub's runner**, instead of attempting to clone them in a network-restricted ChatGPT/Codex container:
+
+```yaml
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: EduardoKrausME/moodle-plugin-validate
+          ref: master
+          path: validator
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: python3 validator/.chatgpt/run.py --check "$GITHUB_WORKSPACE/plugin"
+```
+
+The CI example is validation-only. It does not commit automatic corrections; apply permitted formatting changes to the plugin source and rerun the checks.
+
 ## Required execution
 
 Before considering a plugin finished:
