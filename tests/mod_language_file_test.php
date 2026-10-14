@@ -9,6 +9,8 @@ use EduardoKraus\MoodleStringValidate\Validator;
 function createModLanguagePlugin(string $language): string {
     $root = sys_get_temp_dir() . '/moodle-string-validate-mod-' . bin2hex(random_bytes(6));
     mkdir($root . '/lang/en', 0777, true);
+    mkdir($root . '/db', 0777, true);
+    file_put_contents($root . '/db/upgrade.php', "<?php\n");
 
     file_put_contents($root . '/version.php', <<<'PHPFILE'
 <?php
