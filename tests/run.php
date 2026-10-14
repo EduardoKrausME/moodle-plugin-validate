@@ -472,6 +472,7 @@ removeTree($root);
 $root = createPlugin(['component' => 'mod_example']);
 // Activity modules use lang/en/<modname>.php and require db/upgrade.php.
 rename($root . '/lang/en/mod_example.php', $root . '/lang/en/example.php');
+file_put_contents($root . '/lang/en/example.php', "\$string['pluginadministration'] = 'Example administration';\n", FILE_APPEND);
 file_put_contents($root . '/db/upgrade.php', "<?php\n");
 mkdir($root . '/classes/service', 0777, true);
 file_put_contents($root . '/view.php', "<?php\n// Activity entry point, not the external service class.\n");
