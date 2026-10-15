@@ -2,7 +2,7 @@
 """Normalize version.php for easier release maintenance.
 
 This is a formatter, not a Moodle validation rule. It moves the existing
-$plugin->release and $plugin->version assignments to the top, preserves every
+$plugin->version and $plugin->release assignments to the top, preserves every
 other assignment in its original relative order, and removes a simple
 $plugin->supported assignment as a project cleanup convention.
 """
@@ -27,7 +27,7 @@ class VersionNormalizationError(RuntimeError):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Format version.php with release first and version second, without "
+            "Format version.php with version first and release second, without "
             "turning the convention into a validation rule."
         )
     )
@@ -89,7 +89,7 @@ def normalize_content(content: str, *, filename: Path) -> str:
     removed_before = sum(1 for index in removed_indexes if index < first_assignment_index)
     insertion_index = first_assignment_index - removed_before
 
-    lines[insertion_index:insertion_index] = [release_line, version_line]
+    lines[insertion_index:insertion_index] = [version_line, release_line]
 
     normalized = "\n".join(lines)
     if had_final_newline:
@@ -119,8 +119,8 @@ def main() -> int:
 
     if args.check:
         print(
-            "CHANGE: version.php would be reformatted with release first and "
-            "version second.",
+            "CHANGE: version.php would be reformatted with version first and "
+            "release second.",
             file=sys.stderr,
         )
         return 1
