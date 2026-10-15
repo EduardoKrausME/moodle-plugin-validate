@@ -93,8 +93,8 @@ The script `.chatgpt/scripts/normalize_version.py` is a maintenance formatter, n
 
 It rewrites `version.php` so the two values normally changed during a release are always at the top:
 
-- `$plugin->release` is the first `$plugin` assignment;
-- `$plugin->version` is the second `$plugin` assignment;
+- `$plugin->version` is the first `$plugin` assignment;
+- `$plugin->release` is the second `$plugin` assignment;
 - all other `$plugin` assignments keep their existing relative order;
 - a simple `$plugin->supported = [...];` line is removed as part of the cleanup convention;
 - it does not add any equivalent rule to `VersionRule.php` and does not make this layout part of plugin validation.
