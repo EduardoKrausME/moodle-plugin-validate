@@ -4,6 +4,28 @@ These instructions are mandatory whenever ChatGPT/Codex finishes work on a Moodl
 
 The purpose of this directory is to contain deterministic Python post-processing steps that are executed against the finished plugin. The scripts may rewrite source files only when the rewrite is deterministic and safe. Canonical project validators remain authoritative and must all pass before the plugin is considered finished.
 
+## Mandatory Git and Moodle development conventions
+
+These requirements apply to **all Moodle plugins created, maintained, refactored or fixed** through this workflow. Follow them before editing, while implementing changes and before committing. They take precedence over older examples, formatter behavior or conventions in this document when those conflict. A tooling mismatch is not permission to ignore a mandatory requirement; report it explicitly and resolve it in an authorized change.
+
+1. **Git: `master` only.** Make all repository changes directly on the existing `master` branch. Do not create auxiliary branches, feature branches, tags or GitHub Releases. **Never create tags**, including for version bumps. Do not open pull requests as a substitute for direct `master` changes.
+2. **Strict version commit convention.** Change `version.php` only when explicitly authorized or required by the user's task. Any commit that changes `version.php` must have the **exact** commit message `V N.N.N`, substituting `N.N.N` with the actual semantic release number (for example, `V 1.0.0`). Do not append prefixes, suffixes, issue numbers or descriptions to that message. Keep unrelated changes in separate commits without touching `version.php`; do not silently bump versions.
+3. **Protect GitHub Actions workflows.** Never create, edit, move, rename or delete anything under `.github/workflows/` (including nested paths), even to fix a failing build. Report required workflow changes instead of applying them.
+4. **Mustache-only UI; no renderers.** Use Mustache templates for interface output. Do not create `renderer.php` files, custom renderer classes, or `export_for_template()` methods. Prepare template data in appropriate service, page or presentation classes without implementing renderer subclasses.
+5. **English as source language; Brazilian Portuguese translations.** Keep the canonical language pack under `lang/en/` and provide Brazilian Portuguese translations under `lang/pt_br/` (underscore, not `pt-br`). Never hardcode Portuguese user-facing text in PHP classes, page controllers, JavaScript or Mustache templates. Reference Moodle language strings via the native language APIs, keeping translation placeholders consistent.
+6. **Moodle compatibility.** Support Moodle **4.5 LTS as the minimum** and preserve compatibility with Moodle **5.x**. Prefer native public Moodle APIs, established extension points and feature-detection guards when an API differs between supported versions. Do not introduce dependencies on APIs that exist only in newer Moodle versions without a compatible fallback.
+7. **Subplugin registration.** Whenever a plugin exposes subplugin types, provide `db/subplugins.json` containing **both** `subplugintypes` and `plugintypes` entries for wider compatibility across Moodle versions and recent validation warnings, and provide an `admin_plugins.php` file for administration integration. Keep type names and paths consistent with the actual subplugins and verify against Moodle 4.5 and 5.x.
+8. **English identifiers and comments.** Write code comments, function names, method names, variable names and class names in English. Follow Moodle naming standards and preserve public API compatibility when refactoring existing identifiers.
+9. **Double quotes.** Always use **double quotes for quoted strings** in new or modified PHP and JavaScript code, including language-string keys and values, unless a syntax constraint makes this impossible. Do not introduce single-quoted string literals as a style choice. When existing formatters force single quotes, treat that as a tooling conflict to resolve rather than as an exception to this rule.
+10. **Keep `lib.php` minimal.** Use `lib.php` only for global Moodle callbacks or entry points that Moodle requires in that file. Put business logic, persistence, service orchestration, calculations and reusable functionality in appropriately namespaced classes.
+11. **Prefer cohesive, focused classes.** Separate responsibilities into classes as much as practical: controllers or page orchestration, data access, domain services, reporting, forms, and template-data preparation should not accumulate as unrelated global functions. Keep classes focused and avoid replacing procedural sprawl with a single oversized class.
+12. **Vanilla JavaScript inside AMD modules.** When JavaScript is required, use native JavaScript for application behavior and the Moodle-compatible AMD module pattern `define(["jquery"], function ($) { ... });`. The AMD dependency wrapper does not authorize writing application logic with jQuery; prefer native DOM and browser APIs. Provide translatable JS strings using `$PAGE->requires->strings_for_js()` on the PHP side instead of embedding Portuguese or other fixed translated text.
+13. **Render Mustache through Moodle.** Render all plugin-owned interface templates with `$OUTPUT->render_from_template("component/template", $data)`. Avoid manually concatenating HTML and bypassing Moodle's Mustache rendering pipeline.
+
+Before every commit, review the final diff and confirm: the target is `master`; no `.github/workflows/` files were changed; no branch, tag or release was created; `version.php` is unchanged unless authorized and committed with its mandatory exact message; and the implementation follows the language, template, class and compatibility conventions above.
+
+**Existing validator mismatch:** The current `.chatgpt/scripts/normalize_lang.py` formatter is documented below as producing single-quoted language strings, while rule 9 requires double quotes. Until the formatter itself is updated in a separately authorized tooling change, do **not** represent formatter output or a green runner result as proof of compliance with rule 9. Keep the conflict visible, use non-mutating checks when necessary, and report the blocked requirement rather than silently overriding the requested coding convention.
+
 ## Repository access and restricted-network environments
 
 The finishing pipeline needs a **complete local checkout of this validator repository**, not only a copy of `.chatgpt/`. In particular, `.chatgpt/scripts/validate_all.py` reads `src/Validator.php` and runs `bin/moodle-string-validate` from the validator repository. Python 3 and PHP CLI must be available.
@@ -109,8 +131,8 @@ The script `.chatgpt/scripts/normalize_lang.py` processes every PHP language fil
 For every supported `$string` assignment it must:
 
 - order language string keys alphabetically;
-- use single quotes around the `$string` key;
-- use single quotes around the language value;
+- currently use single quotes around the `$string` key (**legacy implementation, incompatible with mandatory rule 9**);
+- currently use single quotes around the language value (**legacy implementation, incompatible with mandatory rule 9**);
 - preserve comments located between string assignments by moving them together with the following assignment;
 - preserve the file header and trailing content;
 - fail instead of guessing when it finds an unsupported `$string` assignment;
