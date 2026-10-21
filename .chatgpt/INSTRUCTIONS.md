@@ -16,15 +16,13 @@ These requirements apply to **all Moodle plugins created, maintained, refactored
 6. **Moodle compatibility.** Support Moodle **4.5 LTS as the minimum** and preserve compatibility with Moodle **5.x**. Prefer native public Moodle APIs, established extension points and feature-detection guards when an API differs between supported versions. Do not introduce dependencies on APIs that exist only in newer Moodle versions without a compatible fallback.
 7. **Subplugin registration.** Whenever a plugin exposes subplugin types, provide `db/subplugins.json` containing **both** `subplugintypes` and `plugintypes` entries for wider compatibility across Moodle versions and recent validation warnings, and provide an `admin_plugins.php` file for administration integration. Keep type names and paths consistent with the actual subplugins and verify against Moodle 4.5 and 5.x.
 8. **English identifiers and comments.** Write code comments, function names, method names, variable names and class names in English. Follow Moodle naming standards and preserve public API compatibility when refactoring existing identifiers.
-9. **Double quotes.** Always use **double quotes for quoted strings** in new or modified PHP and JavaScript code, including language-string keys and values, unless a syntax constraint makes this impossible. Do not introduce single-quoted string literals as a style choice. When existing formatters force single quotes, treat that as a tooling conflict to resolve rather than as an exception to this rule.
+9. **Quote style by file type.** Use **double quotes** for quoted strings in new or modified PHP and JavaScript code **outside Moodle language files**, unless a syntax constraint makes this impossible. **Mandatory exception for every `lang/<locale>/*.php` file:** each language assignment must use **single quotes for both the key and the value**, with the canonical form `$string['key'] = 'value';`. Never write `$string["key"] = "value";`, mix single and double quotes, or use a non-literal language value. Escape apostrophes and backslashes correctly to preserve PHP string semantics and Moodle placeholders. The `LangQuotesRule` validator rejects violations, and `.chatgpt/scripts/normalize_lang.py` normalizes supported one-line assignments.
 10. **Keep `lib.php` minimal.** Use `lib.php` only for global Moodle callbacks or entry points that Moodle requires in that file. Put business logic, persistence, service orchestration, calculations and reusable functionality in appropriately namespaced classes.
 11. **Prefer cohesive, focused classes.** Separate responsibilities into classes as much as practical: controllers or page orchestration, data access, domain services, reporting, forms, and template-data preparation should not accumulate as unrelated global functions. Keep classes focused and avoid replacing procedural sprawl with a single oversized class.
 12. **Vanilla JavaScript inside AMD modules.** When JavaScript is required, use native JavaScript for application behavior and the Moodle-compatible AMD module pattern `define(["jquery"], function ($) { ... });`. The AMD dependency wrapper does not authorize writing application logic with jQuery; prefer native DOM and browser APIs. Provide translatable JS strings using `$PAGE->requires->strings_for_js()` on the PHP side instead of embedding Portuguese or other fixed translated text.
 13. **Render Mustache through Moodle.** Render all plugin-owned interface templates with `$OUTPUT->render_from_template("component/template", $data)`. Avoid manually concatenating HTML and bypassing Moodle's Mustache rendering pipeline.
 
 Before every commit, review the final diff and confirm: the target is `master`; no `.github/workflows/` files were changed; no branch, tag or release was created; `version.php` is unchanged unless authorized and committed with its mandatory exact message; and the implementation follows the language, template, class and compatibility conventions above.
-
-**Existing validator mismatch:** The current `.chatgpt/scripts/normalize_lang.py` formatter is documented below as producing single-quoted language strings, while rule 9 requires double quotes. Until the formatter itself is updated in a separately authorized tooling change, do **not** represent formatter output or a green runner result as proof of compliance with rule 9. Keep the conflict visible, use non-mutating checks when necessary, and report the blocked requirement rather than silently overriding the requested coding convention.
 
 ## Repository access and restricted-network environments
 
@@ -131,8 +129,8 @@ The script `.chatgpt/scripts/normalize_lang.py` processes every PHP language fil
 For every supported `$string` assignment it must:
 
 - order language string keys alphabetically;
-- currently use single quotes around the `$string` key (**legacy implementation, incompatible with mandatory rule 9**);
-- currently use single quotes around the language value (**legacy implementation, incompatible with mandatory rule 9**);
+- use single quotes around the `$string` key (required by rule 9);
+- use single quotes around the language value (required by rule 9);
 - preserve comments located between string assignments by moving them together with the following assignment;
 - preserve the file header and trailing content;
 - fail instead of guessing when it finds an unsupported `$string` assignment;
@@ -165,6 +163,7 @@ At the time this instruction was written, the registered validation areas includ
 - Privacy API strings;
 - `get_string()` references;
 - translation placeholders;
+- single-quoted keys and values in all `lang/<locale>/*.php` files (including additional locales);
 - Moodle exceptions;
 - legacy AJAX;
 - large HTML fragments in JavaScript;

@@ -51,6 +51,19 @@ final class Guidance {
             ];
         }
 
+        if ($check->rule === "langquotes") {
+            return [
+                "explanation" =>
+                    "Moodle language files must use single-quoted literal keys and values. Double-quoted "
+                    . "values may interpolate PHP variables or interpret escape sequences before Moodle "
+                    . "processes language placeholders.",
+                "howToFix" =>
+                    "Write every language assignment as \$string['key'] = 'value';. Use single quotes "
+                    . "for both literals, escaping apostrophes and backslashes as required by PHP. "
+                    . "The finishing normalizer can fix supported one-line assignments.",
+            ];
+        }
+
         if ($check->rule === 'languagefile' || str_contains($message, 'Missing base language file')) {
             return [
                 'explanation' =>

@@ -32,6 +32,15 @@ The base language file is validated against Moodle metadata:
 
 Missing strings fail validation. Required strings with an empty value also fail by default.
 
+The `langquotes` validator enforces single-quoted keys and values in every `lang/<locale>/*.php` file, including `en`, `pt_br`, and additional translations. This is an error (not a warning) and fails CI. The mandatory format is:
+
+```php
+$string['key'] = 'value';
+```
+
+Double-quoted keys or values, mixed quoting, and non-literal assignments are rejected; comments and text containing example assignments are ignored. The `.chatgpt/scripts/normalize_lang.py` finishing step can rewrite supported one-line assignments in `en` and `pt_br` while preserving their runtime meaning. Use `--check` to validate without modifying files.
+
+
 `get_string()` validation intentionally checks only calls where both the key and component are literal strings and the component is the plugin currently being validated. One-argument core calls such as `get_string('savechanges')`, calls for other components, and dynamically generated keys are ignored.
 
 Privacy validation reads `classes/privacy/provider.php` statically and validates every unique literal string beginning with `privacy:` against the base language file.

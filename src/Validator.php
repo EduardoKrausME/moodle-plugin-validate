@@ -13,6 +13,7 @@ use EduardoKraus\MoodleStringValidate\Rule\GetStringRule;
 use EduardoKraus\MoodleStringValidate\Rule\InstallXmlHeaderRule;
 use EduardoKraus\MoodleStringValidate\Rule\InstallXmlRule;
 use EduardoKraus\MoodleStringValidate\Rule\JavascriptHtmlRule;
+use EduardoKraus\MoodleStringValidate\Rule\LangQuotesRule;
 use EduardoKraus\MoodleStringValidate\Rule\LegacyAjaxRule;
 use EduardoKraus\MoodleStringValidate\Rule\MessageProviderRule;
 use EduardoKraus\MoodleStringValidate\Rule\ModBackupRestoreRule;
@@ -55,6 +56,7 @@ final class Validator {
             new CacheRule(),
             new PrivacyRule(),
             new GetStringRule(),
+            new LangQuotesRule(),
             new TranslationPlaceholderRule(),
             new MoodleExceptionRule(),
             new AmdModulesRule(),
