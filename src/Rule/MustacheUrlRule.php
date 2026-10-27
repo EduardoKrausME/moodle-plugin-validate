@@ -26,6 +26,10 @@ final class MustacheUrlRule implements RuleInterface {
 
     /** @return Check[] */
     public function validate(ValidationContext $context): array {
+        if ($context->ignores($this->name())) {
+            return [new Check(true, $this->name(), '.', 1, '', 'Mustache URL check ignored by configuration.')];
+        }
+
         $checks = [];
 
         foreach ($this->mustacheFiles($context->pluginroot) as $file) {

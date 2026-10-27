@@ -35,6 +35,16 @@ file_put_contents($root . '/templates/example.mustache', <<<'MUSTACHE'
 <a href="/course/view.php?id={{id}}">Embedded expression is not this rule</a>
 MUSTACHE);
 
+$ignored = (new Validator())->validateDetailed($root, 'en', true, ['mustacheurl']);
+$ignorederrors = array_filter(
+    $ignored,
+    static fn($check): bool => $check->rule === 'mustacheurl' && $check->isError(),
+);
+if ($ignorederrors !== []) {
+    fwrite(STDERR, "Mustache URL ignore option did not suppress the rule.\n");
+    exit(1);
+}
+
 $checks = (new Validator())->validateDetailed($root);
 $errors = array_values(array_filter(
     $checks,
