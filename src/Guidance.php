@@ -39,9 +39,9 @@ final class Guidance {
             return [
                 "explanation" =>
                     "Moodle already includes plugin root styles.css files in its generated theme CSS. "
-                    . "Calling $PAGE->requires->css() for the same file is redundant and can duplicate CSS loading.",
+                    . "Calling \$PAGE->requires->css() for the same file is redundant and can duplicate CSS loading.",
                 "howToFix" =>
-                    "Remove the explicit $PAGE->requires->css() call for root styles.css. "
+                    "Remove the explicit \$PAGE->requires->css() call for root styles.css. "
                     . "Continue using the requires API for CSS files that Moodle does not auto-load.",
             ];
         }
