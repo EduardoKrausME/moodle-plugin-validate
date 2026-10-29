@@ -7,6 +7,7 @@ namespace EduardoKraus\MoodleStringValidate;
 use EduardoKraus\MoodleStringValidate\Rule\AccessRule;
 use EduardoKraus\MoodleStringValidate\Rule\AmdModulesRule;
 use EduardoKraus\MoodleStringValidate\Rule\CacheRule;
+use EduardoKraus\MoodleStringValidate\Rule\CssRule;
 use EduardoKraus\MoodleStringValidate\Rule\DbReferencesRule;
 use EduardoKraus\MoodleStringValidate\Rule\ExternalApiRule;
 use EduardoKraus\MoodleStringValidate\Rule\GetStringRule;
@@ -41,6 +42,7 @@ final class Validator {
     public function __construct(?array $rules = null) {
         $this->rules = $rules ?? [
             new RepositoryFilesRule(),
+            new CssRule(),
             new VersionRule(),
             new PluginNameRule(),
             new InstallXmlHeaderRule(),

@@ -25,6 +25,27 @@ final class Guidance {
 
         $message = $check->message;
 
+        if ($check->rule === "css") {
+            if ($check->key === "style.css") {
+                return [
+                    "explanation" =>
+                        "Moodle automatically includes a plugin's root styles.css in its theme CSS. "
+                        . "The singular filename style.css is not discovered by that mechanism.",
+                    "howToFix" =>
+                        "Rename the root style.css file to styles.css. "
+                        . "Keep other independently loaded CSS assets in their appropriate subdirectories.",
+                ];
+            }
+            return [
+                "explanation" =>
+                    "Moodle already includes plugin root styles.css files in its generated theme CSS. "
+                    . "Calling $PAGE->requires->css() for the same file is redundant and can duplicate CSS loading.",
+                "howToFix" =>
+                    "Remove the explicit $PAGE->requires->css() call for root styles.css. "
+                    . "Continue using the requires API for CSS files that Moodle does not auto-load.",
+            ];
+        }
+
         if ($check->rule === 'amd') {
             return [
                 'explanation' =>

@@ -16,6 +16,17 @@ The validator checks that the plugin repository contains:
 - a valid `$plugin->component`;
 - a positive numeric `$plugin->version`.
 
+### Plugin stylesheets
+
+Moodle automatically discovers and includes `styles.css` in the root of each plugin.
+
+- A root-level `style.css` (singular) is an **error**. Rename it to `styles.css`.
+- PHP calls to `$PAGE->requires->css()` that explicitly load a plugin's root `styles.css` are **errors**, because Moodle already loads that file.
+- The check scans real PHP calls, including multiline calls and `new moodle_url(...)` arguments, without treating comments or quoted PHP examples as executable code.
+- Explicitly loading separate CSS assets from subdirectories remains valid, and a plugin is not required to have a stylesheet.
+
+Use `--ignore=css` only when these checks must be intentionally disabled.
+
 ### Language strings
 
 The base language file is validated against Moodle metadata:
