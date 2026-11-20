@@ -34,7 +34,7 @@ final class ValidationContext {
         LanguageCatalog $catalog,
         PhpArrayKeyExtractor $extractor,
         bool $checkempty = true,
-        array $ignoredChecks = [],
+        array $ignoredChecks = []
     ) {
         $this->pluginroot = $pluginroot;
         $this->component = $component;
@@ -85,7 +85,7 @@ final class ValidationContext {
         string $key,
         string $sourcefile,
         int $sourceline,
-        string $reason,
+        string $reason
     ): Check {
         if (!$this->catalog->has($key)) {
             return new Check(
@@ -140,7 +140,7 @@ final class ValidationContext {
         string $key,
         string $sourcefile,
         int $sourceline,
-        string $reason,
+        string $reason
     ): ?Issue {
         return $this->checkRequiredString($rule, $key, $sourcefile, $sourceline, $reason)->toIssue();
     }

@@ -76,7 +76,7 @@ final class Validator {
         string $pluginroot,
         string $language = 'en',
         bool $checkempty = true,
-        array $ignoredChecks = [],
+        array $ignoredChecks = []
     ): array {
         $realroot = realpath($pluginroot);
         if ($realroot === false || !is_dir($realroot)) {
@@ -121,7 +121,7 @@ final class Validator {
         string $pluginroot,
         string $language = 'en',
         bool $checkempty = true,
-        array $ignoredChecks = [],
+        array $ignoredChecks = []
     ): ValidationResult {
         $realroot = realpath($pluginroot);
         if ($realroot === false || !is_dir($realroot)) {
@@ -144,7 +144,7 @@ final class Validator {
         string $pluginroot,
         string $language = 'en',
         bool $checkempty = true,
-        array $ignoredChecks = [],
+        array $ignoredChecks = []
     ): array {
         $issues = [];
         foreach ($this->validateDetailed($pluginroot, $language, $checkempty, $ignoredChecks) as $check) {

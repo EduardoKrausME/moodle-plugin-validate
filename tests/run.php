@@ -48,7 +48,7 @@ function createSubplugin(
     int $parentrequired = 2026081500,
     ?string $component = null,
     bool $dependency = true,
-    int $version = 2026081600,
+    int $version = 2026081600
 ): void {
     $directory = $root . '/' . $type . '/' . $name;
     mkdir($directory, 0777, true);
@@ -67,7 +67,7 @@ PHPFILE);
 function createPlugininfoClass(
     string $root,
     string $type,
-    string $parent = 'local_example',
+    string $parent = 'local_example'
 ): void {
     $directory = $root . '/classes/plugininfo';
     if (!is_dir($directory)) {

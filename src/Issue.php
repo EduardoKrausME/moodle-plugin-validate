@@ -28,7 +28,7 @@ final class Issue {
         string $file,
         int $line,
         string $key,
-        string $message,
+        string $message
     ) {
         $this->rule = $rule;
         $this->file = $file;

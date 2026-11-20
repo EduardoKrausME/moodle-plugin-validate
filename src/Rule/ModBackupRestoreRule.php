@@ -177,7 +177,7 @@ final class ModBackupRestoreRule implements RuleInterface {
         ValidationContext $context,
         string $relative,
         string $classname,
-        string $parentclass,
+        string $parentclass
     ): array {
         $source = file_get_contents($context->pluginroot . "/" . $relative);
         if ($source === false) {
@@ -267,7 +267,7 @@ final class ModBackupRestoreRule implements RuleInterface {
     private function validateStepsFile(
         ValidationContext $context,
         string $relative,
-        string $parentclass,
+        string $parentclass
     ): array {
         $source = file_get_contents($context->pluginroot . "/" . $relative);
         if ($source === false) {

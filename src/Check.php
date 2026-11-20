@@ -43,7 +43,7 @@ final class Check {
         string $key,
         string $message,
         ?string $severity = null,
-        bool $languageString = false,
+        bool $languageString = false
     ) {
         $this->ok = $ok;
         $this->rule = $rule;
@@ -70,7 +70,7 @@ final class Check {
         string $file,
         int $line,
         string $message,
-        string $key = '',
+        string $key = ''
     ): self {
         return new self(true, $rule, $file, $line, $key, $message, 'warning');
     }

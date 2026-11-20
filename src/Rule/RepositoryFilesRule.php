@@ -67,7 +67,7 @@ final class RepositoryFilesRule implements RuleInterface {
         ValidationContext $context,
         array $filenames,
         string $label,
-        string $missingmessage,
+        string $missingmessage
     ): Check {
         foreach ($filenames as $filename) {
             $file = $context->pluginroot . '/' . $filename;
@@ -99,7 +99,7 @@ final class RepositoryFilesRule implements RuleInterface {
         ValidationContext $context,
         string $filename,
         string $successmessage,
-        string $missingmessage,
+        string $missingmessage
     ): Check {
         $exists = is_file($context->pluginroot . '/' . $filename);
 

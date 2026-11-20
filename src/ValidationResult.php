@@ -19,7 +19,7 @@ final class ValidationResult implements JsonSerializable {
      */
     public function __construct(
         string $component,
-        array $checks,
+        array $checks
     ) {
         $this->component = $component;
         $this->checks = $checks;

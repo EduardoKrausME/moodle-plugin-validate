@@ -160,7 +160,7 @@ final class DbReferencesRule implements RuleInterface {
         ?string $methodname,
         array &$checks,
         ?string $classpath = null,
-        ?string $displaykey = null,
+        ?string $displaykey = null
     ): ?array {
         $metadataabsolute = $context->pluginroot . '/' . ltrim($metadatafile, '/');
         $resolvedclassname = $this->inspector->resolveImportedClass($metadataabsolute, $classname);

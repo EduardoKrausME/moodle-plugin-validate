@@ -144,7 +144,7 @@ final class InstallXmlRule implements RuleInterface {
         string $tablename,
         string $expectedprefix,
         string $component,
-        bool $ignoretableprefix,
+        bool $ignoretableprefix
     ): void {
         if (strlen($tablename) > self::TABLE_NAME_MAX_LENGTH) {
             $checks[] = $this->error(
@@ -196,7 +196,7 @@ final class InstallXmlRule implements RuleInterface {
         array &$checks,
         string $relative,
         stdClass $table,
-        string $tablename,
+        string $tablename
     ): void {
         $fields = $this->fieldMap($checks, $relative, $table, $tablename);
         $keys = $this->keyDefinitions($checks, $relative, $table, $tablename, $fields);
@@ -266,7 +266,7 @@ final class InstallXmlRule implements RuleInterface {
         string $relative,
         stdClass $table,
         string $tablename,
-        array $fields,
+        array $fields
     ): array {
         $keys = [];
         $names = [];
@@ -308,7 +308,7 @@ final class InstallXmlRule implements RuleInterface {
         stdClass $table,
         string $tablename,
         array $fields,
-        array $keys,
+        array $keys
     ): void {
         $names = [];
         $fieldsets = [];
@@ -375,7 +375,7 @@ final class InstallXmlRule implements RuleInterface {
         stdClass $table,
         string $tablename,
         array $fields,
-        array $keys,
+        array $keys
     ): void {
         if (!isset($fields['id'])) {
             $checks[] = $this->error($relative, $table->line, "Table '{$tablename}' must define an 'id' field.");
@@ -418,7 +418,7 @@ final class InstallXmlRule implements RuleInterface {
         ValidationContext $context,
         string $relative,
         string $modname,
-        array $tables,
+        array $tables
     ): void {
         if (!isset($tables[$modname])) {
             $checks[] = $this->error(
