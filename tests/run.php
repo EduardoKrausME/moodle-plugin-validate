@@ -96,7 +96,7 @@ function removeTree(string $directory): void {
     rmdir($directory);
 }
 
-function fail(string $message): never {
+function fail(string $message): void {
     fwrite(STDERR, $message . "\n");
     exit(1);
 }

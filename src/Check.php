@@ -8,12 +8,20 @@ namespace EduardoKraus\MoodleStringValidate;
  * Class Check.
  */
 final class Check {
+    public bool $ok;
+    public string $rule;
+    public string $file;
+    public int $line;
+    public string $key;
+    public string $message;
+    public bool $languageString;
+
     /**
      * Property severity.
      *
      * @var string
      */
-    public readonly string $severity;
+    public string $severity;
 
     /**
      * Method __construct.
@@ -28,15 +36,22 @@ final class Check {
      * @param bool $languageString Parameter languageString.
      */
     public function __construct(
-        public readonly bool $ok,
-        public readonly string $rule,
-        public readonly string $file,
-        public readonly int $line,
-        public readonly string $key,
-        public readonly string $message,
+        bool $ok,
+        string $rule,
+        string $file,
+        int $line,
+        string $key,
+        string $message,
         ?string $severity = null,
-        public readonly bool $languageString = false,
+        bool $languageString = false,
     ) {
+        $this->ok = $ok;
+        $this->rule = $rule;
+        $this->file = $file;
+        $this->line = $line;
+        $this->key = $key;
+        $this->message = $message;
+        $this->languageString = $languageString;
         $this->severity = $severity ?? ($ok ? 'ok' : 'error');
     }
 

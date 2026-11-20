@@ -102,7 +102,7 @@ final class LangQuotesRule implements RuleInterface {
     }
 
     /** @param array|string $token */
-    private function isSingleQuotedLiteral(array|string $token): bool {
+    private function isSingleQuotedLiteral($token): bool {
         return is_array($token)
             && $token[0] === T_CONSTANT_ENCAPSED_STRING
             && str_starts_with($token[1], "'");

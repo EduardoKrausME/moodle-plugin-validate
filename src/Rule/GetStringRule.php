@@ -169,7 +169,7 @@ final class GetStringRule implements RuleInterface {
      * @param array|string $token Parameter token.
      * @return bool Return value.
      */
-    private function isLiteral(array|string $token): bool {
+    private function isLiteral($token): bool {
         return is_array($token) && $token[0] === T_CONSTANT_ENCAPSED_STRING;
     }
 

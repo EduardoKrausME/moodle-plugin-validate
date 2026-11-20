@@ -8,6 +8,14 @@ namespace EduardoKraus\MoodleStringValidate;
  * Class ValidationContext.
  */
 final class ValidationContext {
+    public string $pluginroot;
+    public string $component;
+    public string $language;
+    public LanguageCatalog $catalog;
+    public PhpArrayKeyExtractor $extractor;
+    public bool $checkempty;
+    public array $ignoredChecks;
+
     /**
      * Method __construct.
      *
@@ -20,14 +28,21 @@ final class ValidationContext {
      * @param array<string> $ignoredChecks Validation checks to ignore.
      */
     public function __construct(
-        public readonly string $pluginroot,
-        public readonly string $component,
-        public readonly string $language,
-        public readonly LanguageCatalog $catalog,
-        public readonly PhpArrayKeyExtractor $extractor,
-        public readonly bool $checkempty = true,
-        public readonly array $ignoredChecks = [],
+        string $pluginroot,
+        string $component,
+        string $language,
+        LanguageCatalog $catalog,
+        PhpArrayKeyExtractor $extractor,
+        bool $checkempty = true,
+        array $ignoredChecks = [],
     ) {
+        $this->pluginroot = $pluginroot;
+        $this->component = $component;
+        $this->language = $language;
+        $this->catalog = $catalog;
+        $this->extractor = $extractor;
+        $this->checkempty = $checkempty;
+        $this->ignoredChecks = $ignoredChecks;
     }
 
     /**

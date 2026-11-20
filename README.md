@@ -333,7 +333,7 @@ OK [subplugin] Subplugin 'recerttask_activitycompletion' parent dependency versi
 
 ## Local development
 
-The runtime requirement is PHP 8.1 or newer. There are no required Composer dependencies.
+The validator supports PHP 7.4 and newer, including the PHP runtime used by Moodle 3.10 CI jobs. PHP 8 string helpers and qualified-name token identifiers have compatibility fallbacks on PHP 7.4. There are no required Composer dependencies.
 
 ```bash
 php tests/run.php

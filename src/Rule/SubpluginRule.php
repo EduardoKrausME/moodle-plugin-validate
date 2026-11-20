@@ -531,13 +531,18 @@ final class SubpluginRule implements RuleInterface {
             return null;
         }
         [$type, $name] = $parts;
-        return match ($type) {
-            'local' => 'local/' . $name,
-            'mod' => 'mod/' . $name,
-            'tool' => 'admin/tool/' . $name,
-            'editor' => 'lib/editor/' . $name,
-            default => null,
-        };
+        switch ($type) {
+            case "local":
+                return "local/" . $name;
+            case "mod":
+                return "mod/" . $name;
+            case "tool":
+                return "admin/tool/" . $name;
+            case "editor":
+                return "lib/editor/" . $name;
+            default:
+                return null;
+        }
     }
 
     /** @return string[] */

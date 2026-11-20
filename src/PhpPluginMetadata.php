@@ -10,6 +10,8 @@ use RuntimeException;
  * Class PhpPluginMetadata.
  */
 final class PhpPluginMetadata {
+    private string $file;
+
     /**
      * Property contents.
      *
@@ -22,7 +24,8 @@ final class PhpPluginMetadata {
      *
      * @param string $file Parameter file.
      */
-    public function __construct(private readonly string $file) {
+    public function __construct(string $file) {
+        $this->file = $file;
         $contents = file_get_contents($file);
         if ($contents === false) {
             throw new RuntimeException("Unable to read {$file}");
@@ -47,7 +50,7 @@ final class PhpPluginMetadata {
      *
      * @return int|float|null Return value.
      */
-    public function version(): int|float|null {
+    public function version() {
         return $this->numericProperty('version');
     }
 
@@ -56,7 +59,7 @@ final class PhpPluginMetadata {
      *
      * @return int|float|null Return value.
      */
-    public function requires(): int|float|null {
+    public function requires() {
         return $this->numericProperty('requires');
     }
 
@@ -117,7 +120,7 @@ final class PhpPluginMetadata {
      * @param string $property Parameter property.
      * @return int|float|null Return value.
      */
-    private function numericProperty(string $property): int|float|null {
+    private function numericProperty(string $property) {
         if (!preg_match('/\$plugin->' . preg_quote($property, '/') . '\s*=\s*([0-9]+(?:\.[0-9]+)?)\s*;/', $this->contents, $match)) {
             return null;
         }

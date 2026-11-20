@@ -559,7 +559,7 @@ final class PhpSourceInspector {
      * @param array|string $token Parameter token.
      * @return bool Return value.
      */
-    private function isCurlyInterpolationOpen(array|string $token): bool {
+    private function isCurlyInterpolationOpen($token): bool {
         return is_array($token)
             && in_array($token[0], [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true);
     }
@@ -622,7 +622,7 @@ final class PhpSourceInspector {
      * @param string $value Parameter value.
      * @return bool Return value.
      */
-    private function isToken(array|string $token, int $type, string $value): bool {
+    private function isToken($token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }
 }

@@ -10,6 +10,8 @@ use RuntimeException;
  * Class LanguageCatalog.
  */
 final class LanguageCatalog {
+    private string $file;
+
     /** @var array<string, array{empty: bool, line: int}> */
     private array $strings = [];
 
@@ -18,7 +20,8 @@ final class LanguageCatalog {
      *
      * @param string $file Parameter file.
      */
-    public function __construct(private readonly string $file) {
+    public function __construct(string $file) {
+        $this->file = $file;
         $this->parse();
     }
 
@@ -135,7 +138,7 @@ final class LanguageCatalog {
      * @param string $value Parameter value.
      * @return bool Return value.
      */
-    private function isToken(array|string $token, int $type, string $value): bool {
+    private function isToken($token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }
 

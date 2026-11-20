@@ -8,6 +8,12 @@ namespace EduardoKraus\MoodleStringValidate;
  * Class Issue.
  */
 final class Issue {
+    public string $rule;
+    public string $file;
+    public int $line;
+    public string $key;
+    public string $message;
+
     /**
      * Method __construct.
      *
@@ -18,11 +24,16 @@ final class Issue {
      * @param string $message Parameter message.
      */
     public function __construct(
-        public readonly string $rule,
-        public readonly string $file,
-        public readonly int $line,
-        public readonly string $key,
-        public readonly string $message,
+        string $rule,
+        string $file,
+        int $line,
+        string $key,
+        string $message,
     ) {
+        $this->rule = $rule;
+        $this->file = $file;
+        $this->line = $line;
+        $this->key = $key;
+        $this->message = $message;
     }
 }

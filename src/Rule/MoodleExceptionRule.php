@@ -248,7 +248,7 @@ final class MoodleExceptionRule implements RuleInterface {
         foreach ($arguments as $index => $argument) {
             $significant = array_values(array_filter(
                 $argument,
-                static fn(array|string $token): bool => !is_array($token)
+                static fn($token): bool => !is_array($token)
                     || !in_array($token[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)
             ));
 
@@ -313,7 +313,7 @@ final class MoodleExceptionRule implements RuleInterface {
      * @param array|string|null $token Parameter token.
      * @return bool Return value.
      */
-    private function isLiteral(array|string|null $token): bool {
+    private function isLiteral($token): bool {
         return is_array($token) && $token[0] === T_CONSTANT_ENCAPSED_STRING;
     }
 

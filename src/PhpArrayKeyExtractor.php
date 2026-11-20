@@ -119,7 +119,7 @@ final class PhpArrayKeyExtractor {
      * @param string $value Parameter value.
      * @return bool Return value.
      */
-    private function isToken(array|string $token, int $type, string $value): bool {
+    private function isToken($token, int $type, string $value): bool {
         return is_array($token) && $token[0] === $type && $token[1] === $value;
     }
 
@@ -130,7 +130,7 @@ final class PhpArrayKeyExtractor {
      * @param int $type Parameter type.
      * @return bool Return value.
      */
-    private function isTokenType(array|string $token, int $type): bool {
+    private function isTokenType($token, int $type): bool {
         return is_array($token) && $token[0] === $type;
     }
 

@@ -10,14 +10,19 @@ use JsonSerializable;
  * Structured validation result shared by CLI and library consumers.
  */
 final class ValidationResult implements JsonSerializable {
+    private string $component;
+    private array $checks;
+
     /**
      * @param string $component Moodle Frankenstyle component name.
      * @param Check[] $checks Validation checks.
      */
     public function __construct(
-        private readonly string $component,
-        private readonly array $checks,
+        string $component,
+        array $checks,
     ) {
+        $this->component = $component;
+        $this->checks = $checks;
     }
 
     /**
