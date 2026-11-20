@@ -282,7 +282,7 @@ $root = createPlugin([
     'lang' => "<?php\n\$string['pluginname']='Example';\n\$string['subplugintype_exampletype']='Type';\n\$string['subplugintype_exampletype_plural']='Types';\n",
     'subplugins' => '{"subplugintypes":{"exampletype":"exampletype"}}',
 ]);
-createSubplugin($root, 'exampletype', 'alpha', component: 'wrong_alpha');
+createSubplugin($root, 'exampletype', 'alpha', 'local_example', 2026081500, 'wrong_alpha');
 $checks = $validator->validateDetailed($root);
 assertCheck($checks, 'subplugin', false, null, "component must be 'exampletype_alpha'");
 removeTree($root);
@@ -292,7 +292,7 @@ $root = createPlugin([
     'lang' => "<?php\n\$string['pluginname']='Example';\n\$string['subplugintype_exampletype']='Type';\n\$string['subplugintype_exampletype_plural']='Types';\n",
     'subplugins' => '{"subplugintypes":{"exampletype":"exampletype"}}',
 ]);
-createSubplugin($root, 'exampletype', 'alpha', dependency: false);
+createSubplugin($root, 'exampletype', 'alpha', 'local_example', 2026081500, null, false);
 $checks = $validator->validateDetailed($root);
 assertCheck($checks, 'subplugin', false, null, "must declare a dependency on parent plugin 'local_example'");
 removeTree($root);
@@ -303,7 +303,7 @@ $root = createPlugin([
     'lang' => "<?php\n\$string['pluginname']='Example';\n\$string['subplugintype_exampletype']='Type';\n\$string['subplugintype_exampletype_plural']='Types';\n",
     'subplugins' => '{"subplugintypes":{"exampletype":"exampletype"}}',
 ]);
-createSubplugin($root, 'exampletype', 'alpha', parentrequired: 2026081700);
+createSubplugin($root, 'exampletype', 'alpha', 'local_example', 2026081700);
 $checks = $validator->validateDetailed($root);
 assertCheck($checks, 'subplugin', false, null, 'but the bundled parent version is 2026081600');
 removeTree($root);
